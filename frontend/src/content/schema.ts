@@ -1,0 +1,179 @@
+import { z } from 'zod'
+
+/*
+ * The shape every content file must have. This file is used by the tests
+ * only (the build runs the tests first), so zod never ships to the browser.
+ * Other files may import the types below with `import type`.
+ */
+
+const text = z.string().trim().min(1)
+const httpsUrl = z.url({ protocol: /^https$/ })
+
+/** Content files the chatbot is allowed to read. */
+const knowledgeFileNames = [
+  'profile',
+  'availability',
+  'skills',
+  'projects',
+  'education',
+  'experience',
+  'contact',
+]
+
+// Kept as a plain string (not an enum type) so the JSON file can be given the
+// `Content` type directly; the list above is still enforced when checked.
+const knowledgeFileName = text.refine((name) => knowledgeFileNames.includes(name), {
+  error: `Must be one of: ${knowledgeFileNames.join(', ')}`,
+})
+
+const profileSchema = z.strictObject({
+  name: text,
+  title: text,
+  intro: text,
+  location: text,
+  initials: text,
+  photo: text.optional(),
+  about: z.array(text).min(1),
+  footerDescription: text,
+})
+
+const availabilitySchema = z.strictObject({
+  status: text,
+  active: z.boolean(),
+})
+
+const skillCategorySchema = z.strictObject({
+  name: text,
+  tags: z.array(text).min(1),
+})
+
+const projectDetailsSchema = z.strictObject({
+  problemGoal: text.optional(),
+  solutionArchitecture: text.optional(),
+  contributions: text.optional(),
+  resultsChallenges: text.optional(),
+  documentation: z.array(z.strictObject({ label: text, url: httpsUrl })).optional(),
+})
+
+const projectSchema = z.strictObject({
+  id: text,
+  title: text,
+  summary: text,
+  tags: z.array(text).min(1),
+  organisation: text.optional(),
+  image: text.optional(),
+  imageAlt: text.optional(),
+  github: httpsUrl.optional(),
+  details: projectDetailsSchema,
+})
+
+const educationEntrySchema = z.strictObject({
+  institution: text,
+  degree: text,
+  location: text,
+  start: text,
+  end: text,
+  coursework: z.array(text),
+  description: text.optional(),
+})
+
+const experienceEntrySchema = z.strictObject({
+  id: text,
+  title: text,
+  organisation: text,
+  context: text.optional(),
+  location: text.optional(),
+  period: text,
+  summary: text,
+  responsibilities: z.array(text).min(1),
+  technologies: z.array(text),
+  projectId: text.optional(),
+})
+
+const contactSchema = z.strictObject({
+  email: z.email(),
+  linkedin: httpsUrl,
+  github: httpsUrl,
+  cvPath: text,
+  formEndpoint: httpsUrl.optional(),
+})
+
+const knowledgeSourcesSchema = z.strictObject({
+  contentFiles: z.array(knowledgeFileName),
+  includeCv: z.boolean(),
+  repos: z.array(httpsUrl),
+})
+
+const chatSchema = z.strictObject({
+  welcome: text,
+  placeholder: text,
+  limitMessage: text,
+  suggestedQuestions: z.array(text).min(1),
+})
+
+/** Adds an error for every id that appears more than once. */
+function checkUniqueIds(
+  entries: { id: string }[],
+  listName: 'projects' | 'experience',
+  ctx: z.RefinementCtx,
+) {
+  const seen = new Set<string>()
+  entries.forEach((entry, index) => {
+    if (seen.has(entry.id)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [listName, index, 'id'],
+        message: `Duplicate id "${entry.id}" in ${listName}`,
+      })
+    }
+    seen.add(entry.id)
+  })
+}
+
+export const contentSchema = z
+  .strictObject({
+    profile: profileSchema,
+    availability: availabilitySchema,
+    skills: z.array(skillCategorySchema).min(1),
+    projects: z.array(projectSchema),
+    education: z.array(educationEntrySchema),
+    experience: z.array(experienceEntrySchema),
+    contact: contactSchema,
+    knowledgeSources: knowledgeSourcesSchema,
+    chat: chatSchema,
+  })
+  .superRefine((content, ctx) => {
+    checkUniqueIds(content.projects, 'projects', ctx)
+    checkUniqueIds(content.experience, 'experience', ctx)
+
+    const projectIds = new Set(content.projects.map((project) => project.id))
+    content.experience.forEach((entry, index) => {
+      if (entry.projectId !== undefined && !projectIds.has(entry.projectId)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['experience', index, 'projectId'],
+          message: `Experience "${entry.id}" points to unknown project "${entry.projectId}"`,
+        })
+      }
+    })
+  })
+
+export type Content = z.infer<typeof contentSchema>
+export type Profile = Content['profile']
+export type Availability = Content['availability']
+export type SkillCategory = Content['skills'][number]
+export type Project = Content['projects'][number]
+export type ProjectDetails = Project['details']
+export type EducationEntry = Content['education'][number]
+export type ExperienceEntry = Content['experience'][number]
+export type Contact = Content['contact']
+export type KnowledgeSources = Content['knowledgeSources']
+export type ChatConfig = Content['chat']
+
+/**
+ * Checks the joined content and returns it typed.
+ * Throws an error that names the file key and field of every problem.
+ */
+export function validateContent(raw: unknown): Content {
+  return contentSchema.parse(raw)
+}

@@ -1,0 +1,60 @@
+{
+  "categories": [
+    {
+      "name": "Languages",
+      "tags": [
+        "Python",
+        "SQL",
+        "C#",
+        "JavaScript",
+        "C/C++",
+        "Java"
+      ]
+    },
+    {
+      "name": "Machine Learning",
+      "tags": [
+        "PyTorch",
+        "scikit-learn",
+        "Hugging Face",
+        "pandas",
+        "NumPy",
+        "Jupyter"
+      ]
+    },
+    {
+      "name": "AI Methods",
+      "tags": [
+        "LLM agents with tool calling",
+        "Self-hosted LLMs (Gemma)",
+        "NLP",
+        "Transformers and embeddings",
+        "Time-series analysis",
+        "Anomaly detection"
+      ]
+    },
+    {
+      "name": "Backend & Data",
+      "tags": [
+        "Flask",
+        "SQLAlchemy",
+        "REST APIs",
+        "PostgreSQL",
+        "Microsoft SQL Server",
+        "MySQL"
+      ]
+    },
+    {
+      "name": "DevOps & Tools",
+      "tags": [
+        "Git",
+        "GitHub Actions (CI/CD)",
+        "Docker",
+        "Kubernetes",
+        "Grafana",
+        "Prometheus",
+        "Linux"
+      ]
+    }
+  ]
+}

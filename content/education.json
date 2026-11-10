@@ -1,0 +1,21 @@
+{
+  "entries": [
+    {
+      "institution": "Blekinge Institute of Technology (BTH)",
+      "degree": "M.Sc. in Engineering – AI & Machine Learning",
+      "location": "Karlskrona, Sweden",
+      "start": "2022",
+      "end": "2027",
+      "coursework": [
+        "Advanced Machine Learning",
+        "Applied Artificial Intelligence",
+        "Security in AI Systems",
+        "Intelligent Data Analysis",
+        "Research Methodology",
+        "Mathematical Statistics",
+        "Linear Algebra",
+        "Multivariable Calculus"
+      ]
+    }
+  ]
+}

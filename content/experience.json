@@ -1,0 +1,63 @@
+{
+  "entries": [
+    {
+      "id": "trafikverket",
+      "title": "AI Engineering Intern – Incident-Triage Agent",
+      "organisation": "Trafikverket (Swedish Transport Administration)",
+      "context": "Ten-person student team, via BTH",
+      "period": "Sep 2026 – Jan 2027",
+      "summary": "Ten-person student team building an AI agent that triages production alerts for Trafikverket's operations teams.",
+      "responsibilities": [
+        "Designing an agent that reads the metrics, logs and source code behind an alert and proposes a diagnosis with next steps, so on-call engineers start from a hypothesis instead of a blank page.",
+        "Building it on self-hosted LLMs (Gemma) with a tool-calling agent loop, so no operational data leaves the organisation's network.",
+        "Integrating with Grafana, Prometheus and Kubernetes through a Python backend."
+      ],
+      "technologies": [
+        "Python",
+        "Self-hosted LLMs (Gemma)",
+        "Grafana",
+        "Prometheus",
+        "Kubernetes"
+      ],
+      "projectId": "sre-agent"
+    },
+    {
+      "id": "axiogreen",
+      "title": "Machine Learning Engineer – Sensor Classification",
+      "organisation": "Axiogreen",
+      "location": "Sweden",
+      "period": "2026 – Present",
+      "summary": "Classifying building and energy sensor types from metadata and time-series measurements.",
+      "responsibilities": [
+        "Mapped PostgreSQL tables of sensors, devices, locations and measurement history and standardised inconsistent names, categories, units, labels, thresholds and multipliers.",
+        "Analysed more than 7.5 million time-series records from about 130 sensors for missing values, anomalies, value ranges, sampling frequencies and data gaps, and documented the workflow in Jupyter notebooks and Markdown reports."
+      ],
+      "technologies": [
+        "SQL",
+        "PostgreSQL",
+        "Jupyter"
+      ],
+      "projectId": "sensor-classification"
+    },
+    {
+      "id": "ericsson",
+      "title": "Full-Stack Developer – Access-Control System",
+      "organisation": "Ericsson",
+      "context": "Client project via BTH, student team",
+      "location": "Karlskrona, Sweden",
+      "period": "2025 – 2026",
+      "summary": "Student team delivering an access-control system for shared Windows computers to Ericsson's requirements.",
+      "responsibilities": [
+        "Built the Flask administration platform (SQLAlchemy, REST-style routes) for users, access schedules, account expiry, temporary access codes and login history.",
+        "Implemented schedule-based authorisation that checks account status, expiry, weekday and permitted time windows before granting access.",
+        "Connected the platform and Microsoft SQL Server to a C# Windows Forms lock-screen application handling card-based login, session control and audit logging."
+      ],
+      "technologies": [
+        "Flask",
+        "SQLAlchemy",
+        "Microsoft SQL Server",
+        "C#"
+      ]
+    }
+  ]
+}

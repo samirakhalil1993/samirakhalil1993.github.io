@@ -1,0 +1,56 @@
+{
+  "projects": [
+    {
+      "id": "sre-agent",
+      "title": "AI-Powered SRE Agent",
+      "summary": "An AI agent that triages production alerts for Trafikverket's operations teams by reading the metrics, logs and source code behind an alert and proposing a diagnosis with next steps.",
+      "tags": [
+        "Python",
+        "Self-hosted LLMs (Gemma)",
+        "Tool-calling agent loop",
+        "Grafana",
+        "Prometheus",
+        "Kubernetes"
+      ],
+      "organisation": "Trafikverket",
+      "details": {}
+    },
+    {
+      "id": "sensor-classification",
+      "title": "Sensor Classification",
+      "summary": "Classifying building and energy sensor types from metadata and time-series measurements at Axiogreen.",
+      "tags": [
+        "Python",
+        "SQL",
+        "PostgreSQL",
+        "Jupyter",
+        "Time-series analysis"
+      ],
+      "organisation": "Axiogreen",
+      "details": {}
+    },
+    {
+      "id": "distilbert-data-poisoning",
+      "title": "Data-Poisoning Attacks on DistilBERT",
+      "summary": "Controlled experiments measuring how label-flipping and backdoor attacks degrade a DistilBERT sentiment classifier on IMDB, with IsolationForest in embedding space tested as a defence.",
+      "tags": [
+        "DistilBERT",
+        "Hugging Face",
+        "NLP",
+        "AI security"
+      ],
+      "details": {}
+    },
+    {
+      "id": "hospital-readmission",
+      "title": "Hospital Readmission Prediction",
+      "summary": "An end-to-end pipeline predicting 30-day readmission risk, comparing supervised and semi-supervised models.",
+      "tags": [
+        "Python",
+        "pandas",
+        "scikit-learn"
+      ],
+      "details": {}
+    }
+  ]
+}

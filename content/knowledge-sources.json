@@ -1,0 +1,12 @@
+{
+  "contentFiles": [
+    "profile",
+    "availability",
+    "skills",
+    "projects",
+    "education",
+    "experience"
+  ],
+  "includeCv": true,
+  "repos": []
+}

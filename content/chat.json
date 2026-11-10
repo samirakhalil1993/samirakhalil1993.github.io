@@ -1,0 +1,12 @@
+{
+  "welcome": "Hi! I can answer questions about Samir's projects, experience, education and skills.",
+  "placeholder": "Ask about Samir's work",
+  "limitMessage": "The assistant has reached its limit for now. You can reach Samir directly below.",
+  "suggestedQuestions": [
+    "What projects has Samir worked on?",
+    "What technologies does Samir use?",
+    "Tell me about the SRE Agent project.",
+    "What machine learning experience does Samir have?",
+    "What makes Samir suitable for an AI engineering role?"
+  ]
+}

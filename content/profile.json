@@ -1,0 +1,13 @@
+{
+  "name": "Samir Akhalil",
+  "title": "M.Sc. Engineering Student | AI & Machine Learning",
+  "intro": "Building intelligent systems and solving real-world problems through software engineering and artificial intelligence.",
+  "location": "Karlskrona, Sweden",
+  "initials": "SA",
+  "about": [
+    "I'm an M.Sc. Engineering student in AI and Machine Learning at Blekinge Institute of Technology, graduating in 2027. I have hands-on experience applying AI and machine learning to real data from industry and public agencies.",
+    "Right now I'm part of a student team building an AI agent for Trafikverket that triages production alerts, running on self-hosted language models so that no operational data leaves the organisation's network. I also work on classifying building and energy sensors from more than 7.5 million time-series measurements at Axiogreen.",
+    "I'm looking for a master's thesis in AI for spring 2027."
+  ],
+  "footerDescription": "M.Sc. Engineering student in AI and Machine Learning at Blekinge Institute of Technology."
+}
