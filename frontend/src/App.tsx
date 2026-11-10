@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChatWidget } from './chat/ChatWidget'
-import { createDemoClient } from './chat/demoClient'
+import { createChatClient } from './chat/createChatClient'
 import { About } from './components/About'
 import { Contact } from './components/Contact'
 import { CvModal } from './components/CvModal'
@@ -18,10 +18,8 @@ import { sections } from './sections'
 
 const sectionIds = sections.map((section) => section.id)
 
-// Until the AI backend exists (Phase 6), the chat is shown only in demo mode,
-// answered by prepared text built from the content files.
-const chatClient =
-  content.chat.demo && !content.chat.apiUrl ? createDemoClient(content) : null
+// Who answers the chat: the AI backend, the demo, or nobody (see chat.json).
+const chatClient = createChatClient(content)
 
 // Read once when the page loads; a page is not kept open across New Year.
 const currentYear = new Date().getFullYear()

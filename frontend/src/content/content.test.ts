@@ -113,6 +113,25 @@ test('the chat settings are complete and in demo mode', () => {
   expect(content.chat.apiUrl).toBeUndefined()
 })
 
+test('the chat has a notice for live mode', () => {
+  expect(content.chat.liveNotice).toMatch(/AI model/)
+})
+
+test.each(['https://api.example.com', 'http://localhost:8000', 'http://127.0.0.1:8000'])(
+  'accepts the chat API address %s',
+  (apiUrl) => {
+    const c = clone()
+    c.chat.apiUrl = apiUrl
+    expect(() => validateContent(c)).not.toThrow()
+  },
+)
+
+test('rejects chat settings without a live notice', () => {
+  const c = clone()
+  delete c.chat.liveNotice
+  expect(() => validateContent(c)).toThrow(/liveNotice/)
+})
+
 test('rejects a chat API address that is not https', () => {
   const c = clone()
   c.chat.apiUrl = 'http://example.com'

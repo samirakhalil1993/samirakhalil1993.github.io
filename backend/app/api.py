@@ -22,6 +22,8 @@ log = logging.getLogger("portfolio.chat")
 MAX_BODY_BYTES = 64_000
 # How many chunks are looked up; the prompt's character budget cuts further.
 SEARCH_LIMIT = 6
+# How many sources are shown under an answer. More would crowd the chat window.
+MAX_SOURCES = 3
 
 # Visitors appear in logs only as a short hash. The salt is new on every
 # start, so a hash cannot be turned back into an address or followed over time.
@@ -92,6 +94,8 @@ def _sources(chunks: list[Chunk]) -> list[dict[str, str]]:
         elif chunk.section_id:
             source["sectionId"] = chunk.section_id
         sources.append(source)
+        if len(sources) == MAX_SOURCES:
+            break
     return sources
 
 

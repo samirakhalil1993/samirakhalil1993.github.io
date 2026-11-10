@@ -8,6 +8,7 @@ const chat: ChatConfig = {
   title: 'Ask about Test',
   demo: true,
   demoNotice: 'Demo: prepared answers.',
+  liveNotice: 'Answers are written by an AI model.',
   errorMessage: 'The assistant is not available right now.',
   welcome: 'Hi! Ask me something.',
   placeholder: 'Ask a question',
@@ -292,4 +293,18 @@ test('the conversation keeps its list structure inside the log', async () => {
   await finish({ ok: true, sources: [] })
   expect(log().tagName).toBe('DIV')
   expect(within(log()).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2)
+})
+
+test('connected to the backend, the window shows the AI notice and no demo marking', () => {
+  setup({ ...chat, apiUrl: 'https://api.example.com' })
+  open()
+  expect(within(dialog()).queryByText('Demo')).toBeNull()
+  expect(within(dialog()).queryByText('Demo: prepared answers.')).toBeNull()
+  expect(within(dialog()).getByText('Answers are written by an AI model.')).toBeTruthy()
+})
+
+test('in demo mode the AI notice is not shown', () => {
+  setup()
+  open()
+  expect(within(dialog()).queryByText('Answers are written by an AI model.')).toBeNull()
 })

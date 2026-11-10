@@ -5,6 +5,7 @@ Run it locally with:
     uvicorn app.main:app --port 8000
 """
 
+import logging
 import os
 import time
 from collections.abc import Callable
@@ -91,6 +92,8 @@ def __getattr__(name: str):
     # `uvicorn app.main:app` asks for `app`. It is built only then, so that
     # importing this module (in tests, for example) needs no key and no index.
     if name == "app":
+        # Show this app's own log lines (counts and timings, never message text).
+        logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
         env = {**_load_env_file(Path(__file__).resolve().parents[1] / ".env"), **os.environ}
         return create_app(Settings.from_env(env))
     raise AttributeError(name)

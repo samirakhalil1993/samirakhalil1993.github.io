@@ -23,6 +23,10 @@ export function ChatWindow(props: ChatWindowProps) {
   const { id, chat, turns, busy, limitReached, onSend, onRetry, onClose, onSectionLink } = props
   const [draft, setDraft] = useState('')
 
+  // Demo answers are only given while no AI backend is connected.
+  const live = Boolean(chat.apiUrl)
+  const demo = chat.demo && !live
+
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const limitLinkRef = useRef<HTMLAnchorElement>(null)
@@ -93,7 +97,7 @@ export function ChatWindow(props: ChatWindowProps) {
           <h2 id={`${id}-title`} className="truncate font-semibold">
             {chat.title}
           </h2>
-          {chat.demo && (
+          {demo && (
             <span className="shrink-0 rounded-full border border-control-border px-2 py-0.5 text-xs font-semibold">
               Demo
             </span>
@@ -113,7 +117,8 @@ export function ChatWindow(props: ChatWindowProps) {
       </div>
 
       <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-        {chat.demo && <p className="mb-3 text-sm text-muted">{chat.demoNotice}</p>}
+        {demo && <p className="mb-3 text-sm text-muted">{chat.demoNotice}</p>}
+        {live && <p className="mb-3 text-sm text-muted">{chat.liveNotice}</p>}
 
         {turns.length === 0 && (
           <div>

@@ -253,3 +253,16 @@ def test_the_app_starts_with_the_real_index_and_the_stand_in_provider():
     final = events(response)[-1]
     assert final["type"] == "done"
     assert final["sources"][0] == {"label": "Project: AI-Powered SRE Agent", "sectionId": "project-sre-agent"}
+
+
+def test_at_most_three_sources_are_shown():
+    many = [Chunk(f"c{i}", f"T{i}", "text", f"Label {i}", "about") for i in range(6)]
+
+    class All:
+        def search(self, query, limit=4):
+            return many[:limit]
+
+    settings = Settings.from_env({"PROVIDER": "fake"})
+    client = TestClient(create_app(settings, provider=FakeProvider(["ok"]), retriever=All(), chunks=CHUNKS))
+    sources = events(ask(client))[-1]["sources"]
+    assert [s["label"] for s in sources] == ["Label 0", "Label 1", "Label 2"]
