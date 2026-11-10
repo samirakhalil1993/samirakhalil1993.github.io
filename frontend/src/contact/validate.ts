@@ -9,8 +9,8 @@ export type ContactValues = {
 /** One message per wrong field. An empty object means everything is fine. */
 export type ContactErrors = Partial<Record<keyof ContactValues, string>>
 
-/** The longest allowed value of each field, also used as the fields' maxLength. */
-export const maxLength = { name: 100, email: 254, subject: 150, message: 5000 } as const
+/** The longest allowed value of each field. */
+const maxLength = { name: 100, email: 254, subject: 150, message: 5000 } as const
 
 // Something before the @, then a domain with at least one dot, and no spaces.
 const emailShape = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/

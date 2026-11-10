@@ -11,9 +11,9 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 4 (contact form) is finished. The form is built and tested, and it
-appears on the site as soon as the access key is added (see "Turn on the
-contact form" below). Phase 5 adds the chat window of the AI assistant.
+Phase 4 (contact form) is built and tested. The form appears on the site as
+soon as the access key is added (see "Turn on the contact form" below); the
+last step of the phase is one real test message arriving in the inbox. Phase 5 adds the chat window of the AI assistant.
 
 ## Run the site on your computer
 
@@ -103,13 +103,19 @@ files, the site hides the form and shows only the direct links.
    never written in this project.
 2. Web3Forms emails you an access key. It looks like
    `0a1b2c3d-1234-4567-8901-234567890abc`.
-3. Add the key to `content/contact.json`:
+3. Add the key to `content/contact.json` as a new last line inside the
+   braces. The line before it must end with a comma:
 
    ```json
+   "cvPath": "cv.pdf",
    "formAccessKey": "paste-your-key-here"
    ```
 
 4. Run `npm test`, then `npm run dev`, and send yourself one test message.
+
+Web3Forms keeps a copy of each message for a while. You can choose how long
+in your Web3Forms account; a short period is kinder to the people who write
+to you.
 
 The key is not a secret. It only allows sending a message to your inbox,
 which the form on the public site does anyway, so it is safe to keep in the

@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react'
+import { flushSync } from 'react-dom'
 import { submitContact, type SubmitResult } from '../contact/submit'
 import {
-  maxLength,
   validateContact,
   type ContactErrors,
   type ContactValues,
@@ -51,6 +51,8 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
     const next = { ...values, [name]: value }
     setValues(next)
     if (attempted) setErrors(validateContact(next))
+    // An old result message no longer describes what is on screen.
+    if (status !== 'sending') setStatus('idle')
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -58,9 +60,14 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
     if (sendingRef.current) return
 
     const found = validateContact(values)
-    setErrors(found)
-    setAttempted(true)
     const firstWrong = (Object.keys(found) as (keyof ContactValues)[])[0]
+    // Drawn at once, so that the error is already tied to the field when
+    // focus moves there and a screen reader reads both together.
+    flushSync(() => {
+      setErrors(found)
+      setAttempted(true)
+      if (firstWrong) setStatus('idle')
+    })
     if (firstWrong) {
       formRef.current?.querySelector<HTMLElement>(`[name="${firstWrong}"]`)?.focus()
       return
@@ -76,8 +83,15 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
 
     sendingRef.current = true
     setStatus('sending')
-    const result = await submit(values, accessKey)
-    sendingRef.current = false
+    let result: SubmitResult
+    try {
+      result = await submit(values, accessKey)
+    } catch {
+      // The sender promises never to throw; if it does, treat it as a failed send.
+      result = { ok: false, reason: 'network' }
+    } finally {
+      sendingRef.current = false
+    }
 
     if (result.ok) {
       setValues(empty)
@@ -89,6 +103,7 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
   }
 
   const sending = status === 'sending'
+  const failed = status === 'network' || status === 'busy' || status === 'rejected'
 
   /** The attributes that tie a field to its error message. */
   function errorProps(name: keyof ContactValues) {
@@ -126,7 +141,7 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
             type={field.type}
             autoComplete={field.autoComplete}
             required
-            maxLength={maxLength[field.name]}
+            readOnly={sending}
             value={values[field.name]}
             onChange={(event) => handleChange(field.name, event.target.value)}
             className={`${fieldClass} min-h-11`}
@@ -145,7 +160,7 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
           name="message"
           rows={6}
           required
-          maxLength={maxLength.message}
+          readOnly={sending}
           value={values.message}
           onChange={(event) => handleChange('message', event.target.value)}
           className={fieldClass}
@@ -162,31 +177,45 @@ export function ContactForm({ accessKey, email, submit = submitContact }: Contac
         </label>
       </div>
 
+      {/*
+        Not `disabled` while sending: a disabled button drops keyboard focus.
+        The double-submit guard in handleSubmit does the real blocking.
+      */}
       <button
         type="submit"
-        disabled={sending}
-        className="flex min-h-11 cursor-pointer items-center rounded-control bg-button px-5 font-semibold text-white transition-colors hover:bg-button/85 disabled:cursor-wait disabled:opacity-70"
+        aria-disabled={sending}
+        className="flex min-h-11 cursor-pointer items-center rounded-control bg-button px-5 font-semibold text-white transition-colors hover:bg-button/85 aria-disabled:cursor-wait aria-disabled:opacity-70"
       >
         {sending ? 'Sending…' : 'Send message'}
       </button>
 
-      {status === 'sent' && (
-        <p role="status" className="rounded-control border border-success px-4 py-3">
-          Thank you. Your message has been sent.
-        </p>
-      )}
+      {/*
+        Both result areas are always on the page and only their text changes.
+        Screen readers announce text that appears inside an existing area, but
+        often miss an area that is added already filled.
+      */}
+      <div role="status">
+        {status === 'sent' && (
+          <p className="rounded-control border border-success px-4 py-3">
+            Thank you. Your message has been sent.
+          </p>
+        )}
+      </div>
 
-      {(status === 'network' || status === 'busy' || status === 'rejected') && (
-        <p role="alert" className="rounded-control border border-error px-4 py-3">
-          {failureText[status]}:{' '}
-          <a href={`mailto:${email}`} className="break-all text-link underline">
-            {email}
-          </a>
-        </p>
-      )}
+      <div role="alert">
+        {failed && (
+          <p className="rounded-control border border-error px-4 py-3">
+            {failureText[status]}:{' '}
+            <a href={`mailto:${email}`} className="break-all text-link underline">
+              {email}
+            </a>
+          </p>
+        )}
+      </div>
 
       <p className="text-sm text-muted">
-        Your message is delivered by email through Web3Forms. Nothing is stored on this site.
+        Your message is sent to my inbox through Web3Forms, a form service that also keeps a copy of
+        it.
       </p>
     </form>
   )
