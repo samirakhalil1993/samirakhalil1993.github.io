@@ -33,3 +33,16 @@ test('offers the CV as a download', () => {
   expect(link.getAttribute('href')).toBe('cv.pdf')
   expect(link.hasAttribute('download')).toBe(true)
 })
+
+test('shows no form until an access key is set', () => {
+  render(<Contact contact={contact} />)
+  expect(screen.queryByRole('form')).toBeNull()
+})
+
+test('shows the form when an access key is set', () => {
+  render(
+    <Contact contact={{ ...contact, formAccessKey: '0a1b2c3d-1234-4567-8901-234567890abc' }} />,
+  )
+  expect(screen.getByRole('form', { name: 'Contact form' })).toBeTruthy()
+  expect(screen.getByRole('link', { name: /test@example\.com/ })).toBeTruthy()
+})

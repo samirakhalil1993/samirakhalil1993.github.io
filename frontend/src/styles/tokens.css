@@ -19,6 +19,9 @@
   /* The border of form fields. Stronger than the decorative border, so a
      field can be seen as a field. */
   --color-control-border: #6B7280;
+  /* Text and borders for error and success messages. */
+  --color-error: #F87171;
+  --color-success: #4ADE80;
   --radius-card: 12px;
   --radius-control: 8px;
   --font-sans: "Inter Variable", system-ui, sans-serif;

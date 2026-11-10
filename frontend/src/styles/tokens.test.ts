@@ -78,3 +78,11 @@ test('a printed page shows every section, even ones never scrolled to', () => {
 test.each(['bg', 'card'])('the border of form fields is visible on %s', (surface) => {
   expect(contrastRatio(token('control-border'), token(surface))).toBeGreaterThanOrEqual(3)
 })
+
+test.each([
+  ['error', 'bg', 4.5],
+  ['error', 'card', 4.5],
+  ['success', 'card', 3],
+])('%s on %s has a contrast of at least %d', (fg, bg, min) => {
+  expect(contrastRatio(token(fg), token(bg))).toBeGreaterThanOrEqual(min)
+})
