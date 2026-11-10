@@ -1,0 +1,122 @@
+[
+  {
+    "id": "profile",
+    "title": "About Samir Akhalil",
+    "text": "Samir Akhalil – M.Sc. Engineering Student | AI & Machine Learning\nLocation: Karlskrona, Sweden\nBuilding intelligent systems and solving real-world problems through software engineering and artificial intelligence.\nI'm an M.Sc. Engineering student in AI and Machine Learning at Blekinge Institute of Technology, graduating in 2027. I have hands-on experience applying AI and machine learning to real data from industry and the public sector.\nRight now I'm part of a student team building an AI agent for Trafikverket that triages production alerts, running on self-hosted language models so that no operational data leaves the organisation's network. I also work on classifying building and energy sensors from more than 7.5 million time-series measurements at Axiogreen.\nI'm looking for a master's thesis in AI for spring 2027.",
+    "source_label": "About",
+    "section_id": "about",
+    "url": null
+  },
+  {
+    "id": "availability",
+    "title": "Availability",
+    "text": "Current status: Seeking a Master's Thesis in AI · Spring 2027",
+    "source_label": "Availability",
+    "section_id": "home",
+    "url": null
+  },
+  {
+    "id": "skills-languages",
+    "title": "Skills: Languages",
+    "text": "Languages: Python, SQL, C#, JavaScript, C/C++, Java",
+    "source_label": "Technical Skills",
+    "section_id": "skills",
+    "url": null
+  },
+  {
+    "id": "skills-machine-learning",
+    "title": "Skills: Machine Learning",
+    "text": "Machine Learning: PyTorch, scikit-learn, Hugging Face, pandas, NumPy, Jupyter",
+    "source_label": "Technical Skills",
+    "section_id": "skills",
+    "url": null
+  },
+  {
+    "id": "skills-ai-methods",
+    "title": "Skills: AI Methods",
+    "text": "AI Methods: LLM agents with tool calling, Self-hosted LLMs (Gemma), NLP, Transformers and embeddings, Time-series analysis, Anomaly detection",
+    "source_label": "Technical Skills",
+    "section_id": "skills",
+    "url": null
+  },
+  {
+    "id": "skills-backend-data",
+    "title": "Skills: Backend & Data",
+    "text": "Backend & Data: Flask, SQLAlchemy, REST APIs, PostgreSQL, Microsoft SQL Server, MySQL",
+    "source_label": "Technical Skills",
+    "section_id": "skills",
+    "url": null
+  },
+  {
+    "id": "skills-devops-tools",
+    "title": "Skills: DevOps & Tools",
+    "text": "DevOps & Tools: Git, GitHub Actions (CI/CD), Docker, Kubernetes, Grafana, Prometheus, Linux",
+    "source_label": "Technical Skills",
+    "section_id": "skills",
+    "url": null
+  },
+  {
+    "id": "project-sre-agent",
+    "title": "AI-Powered SRE Agent",
+    "text": "Project: AI-Powered SRE Agent\nOrganisation: Trafikverket\nAn AI agent that triages production alerts for Trafikverket's operations teams by reading the metrics, logs and source code behind an alert and proposing a diagnosis with next steps.\nTechnologies: Python, Self-hosted LLMs (Gemma), Tool-calling agent loop, Grafana, Prometheus, Kubernetes",
+    "source_label": "Project: AI-Powered SRE Agent",
+    "section_id": "project-sre-agent",
+    "url": null
+  },
+  {
+    "id": "project-sensor-classification",
+    "title": "Sensor Classification",
+    "text": "Project: Sensor Classification\nOrganisation: Axiogreen\nClassifying building and energy sensor types from metadata and time-series measurements at Axiogreen.\nTechnologies: Python, SQL, PostgreSQL, Jupyter, Time-series analysis",
+    "source_label": "Project: Sensor Classification",
+    "section_id": "project-sensor-classification",
+    "url": null
+  },
+  {
+    "id": "project-distilbert-data-poisoning",
+    "title": "Data-Poisoning Attacks on DistilBERT",
+    "text": "Project: Data-Poisoning Attacks on DistilBERT\nControlled experiments measuring how label-flipping and backdoor attacks degrade a DistilBERT sentiment classifier on IMDB, with IsolationForest in embedding space tested as a defence.\nTechnologies: DistilBERT, Hugging Face, NLP, AI security",
+    "source_label": "Project: Data-Poisoning Attacks on DistilBERT",
+    "section_id": "project-distilbert-data-poisoning",
+    "url": null
+  },
+  {
+    "id": "project-hospital-readmission",
+    "title": "Hospital Readmission Prediction",
+    "text": "Project: Hospital Readmission Prediction\nAn end-to-end pipeline predicting 30-day readmission risk, comparing supervised and semi-supervised models.\nTechnologies: Python, pandas, scikit-learn",
+    "source_label": "Project: Hospital Readmission Prediction",
+    "section_id": "project-hospital-readmission",
+    "url": null
+  },
+  {
+    "id": "education-1",
+    "title": "M.Sc. in Engineering – AI & Machine Learning",
+    "text": "Education: M.Sc. in Engineering – AI & Machine Learning, Blekinge Institute of Technology (BTH), Karlskrona, Sweden\nPeriod: 2022 – 2027\nRelevant coursework: Advanced Machine Learning, Applied Artificial Intelligence, Security in AI Systems, Intelligent Data Analysis, Research Methodology, Mathematical Statistics, Linear Algebra, Multivariable Calculus",
+    "source_label": "Education",
+    "section_id": "education",
+    "url": null
+  },
+  {
+    "id": "experience-trafikverket",
+    "title": "AI Engineering Student – Incident-Triage Agent at Trafikverket (Swedish Transport Administration)",
+    "text": "Experience: AI Engineering Student – Incident-Triage Agent at Trafikverket (Swedish Transport Administration)\nKind of engagement: Ten-person student team, via BTH\nPeriod: Sep 2026 – Jan 2027\nTen-person student team building an AI agent that triages production alerts for Trafikverket's operations teams.\nDesigning an agent that reads the metrics, logs and source code behind an alert and proposes a diagnosis with next steps, so on-call engineers start from a hypothesis instead of a blank page.\nBuilding it on self-hosted LLMs (Gemma) with a tool-calling agent loop, so no operational data leaves the organisation's network.\nIntegrating with Grafana, Prometheus and Kubernetes through a Python backend.\nTechnologies: Python, Self-hosted LLMs (Gemma), Grafana, Prometheus, Kubernetes",
+    "source_label": "Experience: Trafikverket (Swedish Transport Administration)",
+    "section_id": "experience",
+    "url": null
+  },
+  {
+    "id": "experience-axiogreen",
+    "title": "Machine Learning Intern – Sensor Classification at Axiogreen",
+    "text": "Experience: Machine Learning Intern – Sensor Classification at Axiogreen\nKind of engagement: Internship\nPeriod: 2026 – Present\nClassifying building and energy sensor types from metadata and time-series measurements.\nMapped PostgreSQL tables of sensors, devices, locations and measurement history and standardised inconsistent names, categories, units, labels, thresholds and multipliers.\nAnalysed more than 7.5 million time-series records from about 130 sensors for missing values, anomalies, value ranges, sampling frequencies and data gaps, and documented the workflow in Jupyter notebooks and Markdown reports.\nTechnologies: SQL, PostgreSQL, Jupyter",
+    "source_label": "Experience: Axiogreen",
+    "section_id": "experience",
+    "url": null
+  },
+  {
+    "id": "experience-ericsson",
+    "title": "Full-Stack Developer – Access-Control System at Ericsson",
+    "text": "Experience: Full-Stack Developer – Access-Control System at Ericsson\nKind of engagement: Client project via BTH, student team\nPeriod: 2025 – 2026\nStudent team delivering an access-control system for shared Windows computers to Ericsson's requirements.\nBuilt the Flask administration platform (SQLAlchemy, REST-style routes) for users, access schedules, account expiry, temporary access codes and login history.\nImplemented schedule-based authorisation that checks account status, expiry, weekday and permitted time windows before granting access.\nConnected the platform and Microsoft SQL Server to a C# Windows Forms lock-screen application handling card-based login, session control and audit logging.\nTechnologies: Flask, SQLAlchemy, Microsoft SQL Server, C#",
+    "source_label": "Experience: Ericsson",
+    "section_id": "experience",
+    "url": null
+  }
+]
