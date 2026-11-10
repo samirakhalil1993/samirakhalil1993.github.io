@@ -1,4 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import App from './App'
 import { content } from './content'
@@ -41,4 +43,17 @@ test('every link inside the page points to something that exists', () => {
   )
   expect(targets.length).toBeGreaterThan(0)
   targets.forEach((id) => expect(container.querySelector(`[id="${id}"]`), `#${id}`).not.toBeNull())
+})
+
+test('Preview CV opens the CV window', () => {
+  render(<App />)
+  expect(screen.queryByRole('heading', { level: 2, name: 'CV' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Preview CV' }))
+  expect(screen.getByRole('heading', { level: 2, name: 'CV' })).toBeTruthy()
+})
+
+test('the CV file named in the content exists and is a PDF', () => {
+  const file = path.resolve(import.meta.dirname, '../public', content.contact.cvPath)
+  expect(existsSync(file), file).toBe(true)
+  expect(readFileSync(file).subarray(0, 4).toString()).toBe('%PDF')
 })

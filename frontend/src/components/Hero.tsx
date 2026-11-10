@@ -3,10 +3,17 @@ import type { Availability, Profile } from '../content/schema'
 type HeroProps = {
   profile: Profile
   availability: Availability
+  /** Path of the CV file, from contact.json. */
+  cvPath: string
+  /** Called when the visitor clicks "Preview CV". */
+  onPreviewCv: () => void
 }
 
 /** The first screen: name, title, what the person is looking for, and the photo. */
-export function Hero({ profile, availability }: HeroProps) {
+export function Hero({ profile, availability, cvPath, onPreviewCv }: HeroProps) {
+  const outlineButton =
+    'flex min-h-11 cursor-pointer items-center rounded-control border border-border px-5 font-semibold transition-colors hover:border-accent'
+
   return (
     <section
       id="home"
@@ -38,11 +45,11 @@ export function Hero({ profile, availability }: HeroProps) {
           >
             View Projects
           </a>
-          <a
-            href="#contact"
-            className="flex min-h-11 items-center rounded-control border border-border px-5 font-semibold transition-colors hover:border-accent"
-          >
-            Contact
+          <button type="button" onClick={onPreviewCv} className={outlineButton}>
+            Preview CV
+          </button>
+          <a href={cvPath} download className={outlineButton}>
+            Download CV
           </a>
         </div>
       </div>

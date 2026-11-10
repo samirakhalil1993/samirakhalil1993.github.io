@@ -26,3 +26,10 @@ test.each([
   expect(link.getAttribute('target')).toBe('_blank')
   expect(link.getAttribute('rel')).toBe('noopener noreferrer')
 })
+
+test('offers the CV as a download', () => {
+  render(<Contact contact={contact} />)
+  const link = screen.getByRole('link', { name: /Download CV/ })
+  expect(link.getAttribute('href')).toBe('cv.pdf')
+  expect(link.hasAttribute('download')).toBe(true)
+})

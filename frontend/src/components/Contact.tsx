@@ -28,6 +28,10 @@ export function Contact({ contact }: { contact: ContactInfo }) {
             <span className="font-semibold">GitHub</span>
             <span className="text-sm text-link">View repositories</span>
           </a>
+          <a href={contact.cvPath} download className={rowClass}>
+            <span className="font-semibold">Download CV</span>
+            <span className="text-sm text-link">PDF</span>
+          </a>
         </div>
       </div>
     </Section>

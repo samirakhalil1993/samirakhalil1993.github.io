@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { About } from './components/About'
 import { Contact } from './components/Contact'
+import { CvModal } from './components/CvModal'
 import { Education } from './components/Education'
 import { Experience } from './components/Experience'
 import { Footer } from './components/Footer'
@@ -22,13 +24,19 @@ const currentYear = new Date().getFullYear()
  */
 function App() {
   const activeId = useActiveSection(sectionIds)
+  const [cvOpen, setCvOpen] = useState(false)
 
   return (
     <>
       <Navbar name={content.profile.name} activeId={activeId} />
 
       <main className="mx-auto max-w-5xl px-4 md:px-6">
-        <Hero profile={content.profile} availability={content.availability} />
+        <Hero
+          profile={content.profile}
+          availability={content.availability}
+          cvPath={content.contact.cvPath}
+          onPreviewCv={() => setCvOpen(true)}
+        />
         <About paragraphs={content.profile.about} />
         <Skills categories={content.skills} />
         <Projects projects={content.projects} />
@@ -36,6 +44,13 @@ function App() {
         <Experience entries={content.experience} />
         <Contact contact={content.contact} />
       </main>
+
+      <CvModal
+        open={cvOpen}
+        onClose={() => setCvOpen(false)}
+        cvPath={content.contact.cvPath}
+        name={content.profile.name}
+      />
 
       <Footer profile={content.profile} contact={content.contact} year={currentYear} />
     </>
