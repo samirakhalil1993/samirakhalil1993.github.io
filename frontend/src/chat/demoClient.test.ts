@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { content as realContent } from '../content'
 import type { Content } from '../content/schema'
 import { createDemoClient } from './demoClient'
 import type { ChatResult } from './types'
 
 const content = {
-  profile: { name: 'Test Person' },
+  profile: { name: 'Test Person', about: ['Test studies testing.', 'Second paragraph.'] },
   skills: [
     { name: 'Languages', tags: ['Python', 'SQL'] },
     { name: 'Tools', tags: ['Git'] },
@@ -70,6 +71,17 @@ test.each([
     'You can reach Test by email at test@example.com.',
     { label: 'Contact', sectionId: 'contact' },
   ],
+  [
+    'What makes Test suitable for an AI engineering role?',
+    'Test studies testing.',
+    { label: 'About', sectionId: 'about' },
+  ],
+  ['Who is Test?', 'Test studies testing.', { label: 'About', sectionId: 'about' }],
+  [
+    'Tell me about ML',
+    'Student Developer at Org One (2025 – 2026). Intern at Org Two (2026 – Present).',
+    { label: 'Experience', sectionId: 'experience' },
+  ],
 ])('"%s" is answered from the content', async (question, answer, source) => {
   const { text, result } = await ask(question)
   expect(text).toBe(answer)
@@ -128,4 +140,44 @@ test('stops sending words when the answer is cancelled', async () => {
   await pending
   expect(soFar).toBeGreaterThan(0)
   expect(pieces.length).toBe(soFar)
+})
+
+const fallbackText =
+  'This demo has prepared answers about projects, skills, experience, education and contact. Try one of those topics.'
+
+test.each(['Which framework does he use?', 'Does he know neural networks?'])(
+  '"%s" is not mistaken for a question about work experience',
+  async (question) => {
+    const { result } = await ask(question)
+    expect(result).not.toEqual({ ok: true, sources: [{ label: 'Experience', sectionId: 'experience' }] })
+  },
+)
+
+test.each(realContent.chat.suggestedQuestions)(
+  'the real suggested question "%s" gets a real answer',
+  async (question) => {
+    const pieces: string[] = []
+    const client = createDemoClient(realContent, { delayMs: 1 })
+    const pending = client([{ role: 'user', text: question }], (p) => pieces.push(p), new AbortController().signal)
+    await vi.runAllTimersAsync()
+    const result = await pending
+    expect(pieces.join('')).not.toBe(fallbackText)
+    expect(result.ok && result.sources.length).toBe(1)
+  },
+)
+
+test('an answer uses only words that are in the content or in its fixed sentence', async () => {
+  const known = new Set(
+    (JSON.stringify(content) + ' has worked on at You can reach by email')
+      .split(/[^\p{L}\p{N}@.–-]+/u)
+      .map((word) => word.replace(/[.,:]+$/, '')),
+  )
+  for (const question of ['Where did Test study?', 'What projects?', 'How can I reach Test?', 'experience?']) {
+    const { text } = await ask(question)
+    const unknown = text
+      .split(/[^\p{L}\p{N}@.–-]+/u)
+      .map((word) => word.replace(/[.,:]+$/, ''))
+      .filter((word) => word !== '' && !known.has(word))
+    expect(unknown, question).toEqual([])
+  }
 })

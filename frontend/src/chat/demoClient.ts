@@ -8,8 +8,18 @@ const fallback: Answer = {
   sources: [],
 }
 
-const includesAny = (question: string, words: string[]) =>
-  words.some((word) => question.includes(word))
+/**
+ * True when the question has a word that starts with one of the given
+ * beginnings. Matching whole word starts keeps "work" from matching
+ * "framework" or "network". A beginning ending in "$" must be the whole word.
+ */
+function hasWord(question: string, beginnings: string[]): boolean {
+  return beginnings.some((beginning) => {
+    const whole = beginning.endsWith('$')
+    const pattern = whole ? `\\b${beginning.slice(0, -1)}\\b` : `\\b${beginning}`
+    return new RegExp(pattern).test(question)
+  })
+}
 
 /**
  * Picks the prepared answer for a question. Every answer is put together
@@ -24,7 +34,7 @@ function answerFor(rawQuestion: string, content: Content): Answer {
     candidate.id
       .split('-')
       .filter((word) => word.length > 2 && word !== 'agent' && word !== 'data')
-      .some((word) => question.includes(word)),
+      .some((word) => hasWord(question, [word])),
   )
   if (project) {
     return {
@@ -33,7 +43,7 @@ function answerFor(rawQuestion: string, content: Content): Answer {
     }
   }
 
-  if (question.includes('project')) {
+  if (hasWord(question, ['project'])) {
     const titles = content.projects.map((item) => item.title).join(', ')
     return {
       text: `${firstName} has worked on: ${titles}.`,
@@ -41,7 +51,7 @@ function answerFor(rawQuestion: string, content: Content): Answer {
     }
   }
 
-  if (includesAny(question, ['skill', 'technolog', 'tool', 'language'])) {
+  if (hasWord(question, ['skill', 'technolog', 'tool', 'language', 'framework'])) {
     return {
       text: content.skills
         .map((category) => `${category.name}: ${category.tags.join(', ')}.`)
@@ -50,7 +60,7 @@ function answerFor(rawQuestion: string, content: Content): Answer {
     }
   }
 
-  if (includesAny(question, ['machine learning', 'ml ', 'experience', 'work'])) {
+  if (hasWord(question, ['machine learning', 'ml$', 'experience', 'work'])) {
     return {
       text: content.experience
         .map((entry) => `${entry.title} at ${entry.organisation} (${entry.period}).`)
@@ -59,7 +69,7 @@ function answerFor(rawQuestion: string, content: Content): Answer {
     }
   }
 
-  if (includesAny(question, ['education', 'study', 'degree', 'university'])) {
+  if (hasWord(question, ['education', 'stud', 'degree', 'university'])) {
     return {
       text: content.education
         .map((entry) => `${entry.degree}, ${entry.institution}, ${entry.start} – ${entry.end}.`)
@@ -68,10 +78,18 @@ function answerFor(rawQuestion: string, content: Content): Answer {
     }
   }
 
-  if (includesAny(question, ['contact', 'email', 'reach'])) {
+  if (hasWord(question, ['contact', 'email', 'reach'])) {
     return {
       text: `You can reach ${firstName} by email at ${content.contact.email}.`,
       sources: [{ label: 'Contact', sectionId: 'contact' }],
+    }
+  }
+
+  // General questions about the person are answered with the About text.
+  if (hasWord(question, ['who', 'why', 'about', 'suitab', 'role', 'hire'])) {
+    return {
+      text: content.profile.about[0],
+      sources: [{ label: 'About', sectionId: 'about' }],
     }
   }
 

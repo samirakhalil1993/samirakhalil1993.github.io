@@ -54,17 +54,23 @@ export function useChat(client: ChatClient) {
     abortRef.current = controller
     busyRef.current = true
 
+    // Once the answer has ended or been cancelled, late pieces are ignored.
+    // Otherwise a slow stream could reopen a finished answer.
+    let settled = false
     let result: ChatResult
     try {
       result = await client(
         history,
-        (piece) =>
-          updateAssistant(id, (turn) => ({ ...turn, status: 'streaming', text: turn.text + piece })),
+        (piece) => {
+          if (settled || controller.signal.aborted) return
+          updateAssistant(id, (turn) => ({ ...turn, status: 'streaming', text: turn.text + piece }))
+        },
         controller.signal,
       )
     } catch {
       result = { ok: false, reason: 'network' }
     }
+    settled = true
 
     busyRef.current = false
     if (controller.signal.aborted) return

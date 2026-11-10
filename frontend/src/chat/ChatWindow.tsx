@@ -25,15 +25,31 @@ export function ChatWindow(props: ChatWindowProps) {
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+  const limitLinkRef = useRef<HTMLAnchorElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
   const tooLong = draft.length > MAX_MESSAGE_LENGTH
   const canSend = !busy && !tooLong && draft.trim() !== ''
 
-  // Opening the window puts the cursor where the visitor will type.
+  // Opening the window puts the cursor where the visitor will type. On a
+  // touch screen that would raise the keyboard over half the window before
+  // anything has been read, so focus goes to the Close button there.
   useEffect(() => {
-    ;(inputRef.current ?? closeRef.current)?.focus()
+    const touch = window.matchMedia?.('(pointer: coarse)').matches
+    ;((touch ? null : inputRef.current) ?? closeRef.current)?.focus()
   }, [])
+
+  // When the limit bar replaces the question field, the field (and the
+  // focus in it) is gone. Move focus to the bar's link so it is not lost.
+  useEffect(() => {
+    if (limitReached) limitLinkRef.current?.focus()
+  }, [limitReached])
+
+  /** For buttons that vanish when used: put focus back in the question field. */
+  function thenFocusInput(action: () => void) {
+    action()
+    inputRef.current?.focus()
+  }
 
   // Keep the newest message in view as the conversation grows.
   useEffect(() => {
@@ -65,6 +81,11 @@ export function ChatWindow(props: ChatWindowProps) {
       id={id}
       role="dialog"
       aria-labelledby={`${id}-title`}
+      // Escape closes the chat only when focus is inside it, so it never
+      // steals the key from the rest of the page or from the CV window.
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') onClose()
+      }}
       className="chat-enter fixed inset-x-2 top-2 bottom-20 z-50 flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-2xl sm:inset-x-auto sm:top-auto sm:right-4 sm:bottom-24 sm:h-[min(36rem,calc(100dvh-7rem))] sm:w-96"
     >
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-2">
@@ -102,7 +123,7 @@ export function ChatWindow(props: ChatWindowProps) {
                 <li key={question}>
                   <button
                     type="button"
-                    onClick={() => onSend(question)}
+                    onClick={() => thenFocusInput(() => onSend(question))}
                     className="flex min-h-11 w-full cursor-pointer items-center rounded-control border border-border px-3 py-2 text-left text-sm transition-colors hover:border-accent"
                   >
                     {question}
@@ -117,23 +138,27 @@ export function ChatWindow(props: ChatWindowProps) {
           A log: screen readers announce new messages. While an answer is
           still arriving it is marked busy, so it is read once, when complete.
         */}
-        <ul role="log" aria-live="polite" aria-busy={busy} aria-label="Conversation" className="space-y-3">
-          {turns.map((turn) => (
-            <ChatMessage
-              key={turn.id}
-              turn={turn}
-              chat={chat}
-              onRetry={onRetry}
-              onSectionLink={onSectionLink}
-            />
-          ))}
-        </ul>
+        <div role="log" aria-live="polite" aria-busy={busy} aria-label="Conversation">
+          <ul className="space-y-3">
+            {turns.map((turn, index) => (
+              <ChatMessage
+                key={turn.id}
+                turn={turn}
+                chat={chat}
+                canRetry={index === turns.length - 1}
+                onRetry={() => thenFocusInput(onRetry)}
+                onSectionLink={onSectionLink}
+              />
+            ))}
+          </ul>
+        </div>
       </div>
 
       {limitReached ? (
         <div className="border-t border-border px-4 py-3 text-sm">
           <p>{chat.limitMessage}</p>
           <a
+            ref={limitLinkRef}
             href="#contact"
             onClick={onSectionLink}
             className="mt-1 flex min-h-11 w-fit items-center font-semibold text-link hover:underline"
@@ -155,6 +180,7 @@ export function ChatWindow(props: ChatWindowProps) {
               placeholder={chat.placeholder}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={handleKeyDown}
+              enterKeyHint="send"
               aria-invalid={tooLong || undefined}
               aria-describedby={draft.length >= COUNTER_FROM ? `${id}-counter` : undefined}
               className="max-h-32 min-h-11 flex-1 resize-none rounded-control border border-control-border bg-bg px-3 py-2 placeholder:text-muted aria-invalid:border-error"

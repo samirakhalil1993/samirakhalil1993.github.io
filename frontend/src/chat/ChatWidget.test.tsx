@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
-import { expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import type { ChatConfig } from '../content/schema'
 import { ChatWidget } from './ChatWidget'
 import type { ChatClient, ChatResult } from './types'
@@ -14,6 +14,8 @@ const chat: ChatConfig = {
   limitMessage: 'The assistant has reached its limit for now.',
   suggestedQuestions: ['What projects?', 'What skills?'],
 }
+
+afterEach(() => vi.unstubAllGlobals())
 
 function controlledClient() {
   let emit: (piece: string) => void = () => {}
@@ -65,7 +67,7 @@ test('opens with the welcome text, the suggestions, and focus in the question fi
 test('Escape closes it and returns focus to the button', () => {
   setup()
   open()
-  fireEvent.keyDown(document, { key: 'Escape' })
+  fireEvent.keyDown(input(), { key: 'Escape' })
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(document.activeElement).toBe(openButton())
 })
@@ -203,7 +205,6 @@ test('choosing a section source closes the window on a small screen', async () =
   await finish({ ok: true, sources: [{ label: 'Projects', sectionId: 'projects' }] })
   fireEvent.click(screen.getByRole('link', { name: 'Projects' }))
   expect(screen.queryByRole('dialog')).toBeNull()
-  vi.unstubAllGlobals()
 })
 
 test('choosing a section source keeps the window open on a wide screen', async () => {
@@ -216,5 +217,79 @@ test('choosing a section source keeps the window open on a wide screen', async (
   await finish({ ok: true, sources: [{ label: 'Projects', sectionId: 'projects' }] })
   fireEvent.click(screen.getByRole('link', { name: 'Projects' }))
   expect(screen.getByRole('dialog')).toBeTruthy()
-  vi.unstubAllGlobals()
+})
+
+test('Escape pressed elsewhere on the page leaves the chat open', () => {
+  setup()
+  open()
+  fireEvent.keyDown(document.body, { key: 'Escape' })
+  expect(screen.getByRole('dialog')).toBeTruthy()
+})
+
+test('Escape on the chat button closes the chat', () => {
+  setup()
+  open()
+  const toggle = screen.getAllByRole('button', { name: 'Close chat' }).find((b) => b.hasAttribute('aria-expanded'))!
+  fireEvent.keyDown(toggle, { key: 'Escape' })
+  expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+test('after a suggested question is chosen, focus is in the question field', () => {
+  setup()
+  open()
+  const suggestion = screen.getByRole('button', { name: 'What projects?' })
+  suggestion.focus()
+  fireEvent.click(suggestion)
+  expect(document.activeElement).toBe(input())
+})
+
+test('after Try again, focus is in the question field', async () => {
+  const { finish } = setup()
+  open()
+  type('Hello')
+  pressEnter()
+  await finish({ ok: false, reason: 'network' })
+  const retry = screen.getByRole('button', { name: 'Try again' })
+  retry.focus()
+  fireEvent.click(retry)
+  expect(document.activeElement).toBe(input())
+})
+
+test('when the limit replaces the question field, focus moves to the contact link', async () => {
+  const { finish } = setup()
+  open()
+  type('Hello')
+  pressEnter()
+  await finish({ ok: false, reason: 'limit' })
+  expect(document.activeElement).toBe(within(dialog()).getByRole('link', { name: 'Go to contact' }))
+})
+
+test('only the latest failed answer offers Try again', async () => {
+  const { finish } = setup()
+  open()
+  type('First')
+  pressEnter()
+  await finish({ ok: false, reason: 'network' })
+  type('Second')
+  pressEnter()
+  await finish({ ok: false, reason: 'network' })
+  expect(screen.getAllByRole('button', { name: 'Try again' })).toHaveLength(1)
+})
+
+test('on a touch screen, opening does not put the cursor in the field (no keyboard pops up)', () => {
+  vi.stubGlobal('matchMedia', (query: string) => ({ matches: query.includes('pointer: coarse') }))
+  setup()
+  open()
+  expect(document.activeElement).toBe(within(dialog()).getByRole('button', { name: 'Close chat' }))
+})
+
+test('the conversation keeps its list structure inside the log', async () => {
+  const { emit, finish } = setup()
+  open()
+  type('Hello')
+  pressEnter()
+  emit('Answer')
+  await finish({ ok: true, sources: [] })
+  expect(log().tagName).toBe('DIV')
+  expect(within(log()).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2)
 })

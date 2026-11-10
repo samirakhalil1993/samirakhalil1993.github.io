@@ -63,3 +63,8 @@ test('offers the chat while the content is in demo mode', () => {
   expect(content.chat.demo).toBe(true)
   expect(screen.getByRole('button', { name: 'Open chat' })).toBeTruthy()
 })
+
+test('the page shrinks for the on-screen keyboard, so the chat field stays visible on phones', () => {
+  const html = readFileSync(path.resolve(import.meta.dirname, '../index.html'), 'utf8')
+  expect(html).toMatch(/name="viewport"[^>]*interactive-widget=resizes-content/)
+})

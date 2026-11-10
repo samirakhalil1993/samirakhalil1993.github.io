@@ -187,3 +187,13 @@ test('leaving the page cancels an answer that is still arriving', () => {
   hook.unmount()
   expect(calls[0].signal.aborted).toBe(true)
 })
+
+test('text that arrives after the answer has ended is ignored', async () => {
+  const { chat, send, emit, finish } = setup()
+  send('Hi')
+  emit('Done.')
+  await finish({ ok: true, sources: [] })
+  emit(' Late text')
+  expect(assistant(chat().turns)).toMatchObject({ status: 'done', text: 'Done.' })
+  expect(chat().busy).toBe(false)
+})

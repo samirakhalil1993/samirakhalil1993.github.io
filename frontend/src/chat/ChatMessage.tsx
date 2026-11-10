@@ -4,6 +4,8 @@ import type { ChatTurn, Source } from './types'
 type ChatMessageProps = {
   turn: ChatTurn
   chat: ChatConfig
+  /** Only the newest answer can be tried again. */
+  canRetry: boolean
   onRetry: () => void
   /** Called when a link to a section of the page is chosen. */
   onSectionLink: () => void
@@ -31,7 +33,7 @@ function SourceLink({ source, onSectionLink }: { source: Source; onSectionLink: 
 }
 
 /** One message in the conversation: the visitor's question or the assistant's answer. */
-export function ChatMessage({ turn, chat, onRetry, onSectionLink }: ChatMessageProps) {
+export function ChatMessage({ turn, chat, canRetry, onRetry, onSectionLink }: ChatMessageProps) {
   if (turn.role === 'user') {
     return (
       <li className="flex justify-end">
@@ -76,7 +78,7 @@ export function ChatMessage({ turn, chat, onRetry, onSectionLink }: ChatMessageP
       {turn.status === 'failed' && (
         <div className="max-w-[92%] rounded-card border border-error px-4 py-2.5">
           <p>{limited ? chat.limitMessage : chat.errorMessage}</p>
-          {!limited && (
+          {!limited && canRetry && (
             <button
               type="button"
               onClick={onRetry}

@@ -135,7 +135,12 @@ is set in `content/chat.json`:
 | `title`, `welcome`, `placeholder` | The texts of the window. |
 | `suggestedQuestions` | The questions offered before the first message. |
 | `errorMessage`, `limitMessage` | Shown when an answer fails, or when the usage limit is reached. |
-| `apiUrl` | The address of the AI backend. It is added in Phase 6 and switches the chat to live mode. |
+| `apiUrl` | The address of the AI backend. Leave it out for now: it is added in Phase 6, and until then setting it only hides the chat. |
+
+In demo mode, a question is answered only if it contains a word the demo
+knows (project, skill, experience, education, contact, or a general word
+such as "who" or "why"). If you change the suggested questions, run
+`npm test`: a check fails when one of them would get no real answer.
 
 **Before the site goes public, set `"demo": false` unless the AI backend is
 connected.** A visitor should not meet a chat that can only give prepared
