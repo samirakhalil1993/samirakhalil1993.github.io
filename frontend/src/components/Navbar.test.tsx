@@ -37,3 +37,8 @@ test('marks the active link with an underline, not only with colour', () => {
   expect(screen.getByRole('link', { name: 'Projects' }).className).toMatch(/\bborder-accent\b/)
   expect(screen.getByRole('link', { name: 'About' }).className).toMatch(/\bborder-transparent\b/)
 })
+
+test('has the menu button for small screens', () => {
+  render(<Navbar name="Test Person" activeId={null} />)
+  expect(within(screen.getByRole('banner')).getByRole('button', { name: 'Open menu' })).toBeTruthy()
+})

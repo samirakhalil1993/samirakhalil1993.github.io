@@ -33,6 +33,11 @@
     outline-offset: 2px;
   }
 
+  /* The page behind an open window does not scroll. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
   /* Keeps section jumps and keyboard focus clear of the sticky navbar. */
   html {
     scroll-padding-top: 5rem;

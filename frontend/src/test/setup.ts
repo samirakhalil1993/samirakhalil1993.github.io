@@ -18,3 +18,16 @@ globalThis.IntersectionObserver ??= class {
   rootMargin = ''
   thresholds = []
 } as unknown as typeof IntersectionObserver
+
+// Older jsdom versions cannot open a <dialog>. These stand-ins do the part the
+// components rely on: the `open` attribute, and a `close` event on closing.
+if (typeof HTMLDialogElement.prototype.showModal !== 'function') {
+  HTMLDialogElement.prototype.showModal = function () {
+    this.setAttribute('open', '')
+  }
+  HTMLDialogElement.prototype.close = function () {
+    if (!this.hasAttribute('open')) return
+    this.removeAttribute('open')
+    this.dispatchEvent(new Event('close'))
+  }
+}

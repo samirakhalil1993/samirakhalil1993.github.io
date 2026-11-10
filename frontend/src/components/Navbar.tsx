@@ -1,4 +1,5 @@
 import { sections, type SectionId } from '../sections'
+import { MobileMenu } from './MobileMenu'
 
 type NavbarProps = {
   name: string
@@ -15,7 +16,8 @@ export function Navbar({ name, activeId }: NavbarProps) {
           {name}
         </a>
 
-        {/* Hidden on small screens until the hamburger menu arrives in Phase 3. */}
+        {/* Small screens get the hamburger menu; wider screens get the link row. */}
+        <MobileMenu activeId={activeId} />
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
           {sections.map((section) => {
             const isActive = section.id === activeId
