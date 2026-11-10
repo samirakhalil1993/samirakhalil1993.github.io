@@ -57,3 +57,9 @@ test('the CV file named in the content exists and is a PDF', () => {
   expect(existsSync(file), file).toBe(true)
   expect(readFileSync(file).subarray(0, 4).toString()).toBe('%PDF')
 })
+
+test('offers the chat while the content is in demo mode', () => {
+  render(<App />)
+  expect(content.chat.demo).toBe(true)
+  expect(screen.getByRole('button', { name: 'Open chat' })).toBeTruthy()
+})

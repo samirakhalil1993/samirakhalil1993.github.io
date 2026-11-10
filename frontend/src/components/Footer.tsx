@@ -69,7 +69,8 @@ export function Footer({ profile, contact, year }: FooterProps) {
       </div>
 
       <div className="border-t border-border">
-        <p className="mx-auto max-w-5xl px-4 py-5 text-sm text-muted md:px-6">
+        {/* Extra room at the bottom on small screens, clear of the chat button. */}
+        <p className="mx-auto max-w-5xl px-4 pt-5 pb-24 text-sm text-muted md:px-6 md:pb-5">
           {`© ${year} ${profile.name}`}
         </p>
       </div>

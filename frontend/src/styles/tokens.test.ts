@@ -63,7 +63,13 @@ function cssWithoutMotionBlock(): string {
   return css.slice(0, start) + css.slice(end)
 }
 
-test.each(["[data-reveal='hidden']", 'pulse-dot', 'transition: grid-template-rows'])(
+test.each([
+  "[data-reveal='hidden']",
+  'pulse-dot',
+  'transition: grid-template-rows',
+  'chat-enter',
+  'typing-dot',
+])(
   'the motion rule "%s" exists only where motion is allowed',
   (rule) => {
     expect(css).toContain(rule)
