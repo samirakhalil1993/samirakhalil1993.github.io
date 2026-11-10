@@ -24,7 +24,7 @@ export function Hero({ profile, availability, cvPath, onPreviewCv }: HeroProps) 
         <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm">
           <span
             aria-hidden="true"
-            className={`size-2 shrink-0 rounded-full ${availability.active ? 'bg-accent' : 'bg-muted'}`}
+            className={`size-2 shrink-0 rounded-full ${availability.active ? 'pulse-dot bg-accent' : 'bg-muted'}`}
           />
           {availability.status}
         </p>

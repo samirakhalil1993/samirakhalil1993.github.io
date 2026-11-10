@@ -60,3 +60,10 @@ test('Download CV links to the CV file as a download', () => {
   expect(link.getAttribute('href')).toBe('cv.pdf')
   expect(link.hasAttribute('download')).toBe(true)
 })
+
+test('the status dot pulses only while the status is active', () => {
+  const { container, rerender } = render(<Hero {...props} />)
+  expect(container.querySelector('.pulse-dot')).not.toBeNull()
+  rerender(<Hero {...props} availability={{ status: 'Not looking', active: false }} />)
+  expect(container.querySelector('.pulse-dot')).toBeNull()
+})

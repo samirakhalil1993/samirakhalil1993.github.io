@@ -52,3 +52,21 @@ test('smooth scrolling is only on when motion is allowed', () => {
 test('jumps and keyboard focus stay clear of the sticky navbar', () => {
   expect(css).toMatch(/html\s*\{[^}]*scroll-padding-top: 5rem/)
 })
+
+/** The CSS with the "motion allowed" block cut out. */
+function cssWithoutMotionBlock(): string {
+  const start = css.indexOf('@media (prefers-reduced-motion: no-preference)')
+  // The block ends at the first closing brace that sits at its own indent level.
+  const end = css.indexOf('\n  }\n', start)
+  expect(start).toBeGreaterThan(-1)
+  expect(end).toBeGreaterThan(start)
+  return css.slice(0, start) + css.slice(end)
+}
+
+test.each(["[data-reveal='hidden']", 'pulse-dot', 'transition: grid-template-rows'])(
+  'the motion rule "%s" exists only where motion is allowed',
+  (rule) => {
+    expect(css).toContain(rule)
+    expect(cssWithoutMotionBlock()).not.toContain(rule)
+  },
+)

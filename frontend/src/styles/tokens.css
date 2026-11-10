@@ -51,6 +51,33 @@
     .expand {
       transition: grid-template-rows 300ms ease;
     }
+
+    /* Sections fade and rise slightly the first time they scroll into view. */
+    [data-reveal] {
+      transition:
+        opacity 500ms ease,
+        transform 500ms ease;
+    }
+
+    [data-reveal='hidden'] {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    /* A soft ring that spreads from the availability dot. */
+    .pulse-dot {
+      animation: pulse-dot 2s ease-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 60%, transparent);
+      }
+      70%,
+      100% {
+        box-shadow: 0 0 0 8px transparent;
+      }
+    }
   }
 
   /* A box that opens and closes by growing its single row from 0 to full height. */
