@@ -1,0 +1,73 @@
+"""Keyword search over the knowledge index, ranked with BM25."""
+
+import math
+from collections import Counter
+from collections.abc import Iterable
+from typing import Protocol
+
+from app.retrieval.index import Chunk
+from app.retrieval.text import tokenise, translate_query
+
+
+class Retriever(Protocol):
+    """Anything that can find the chunks relevant to a question."""
+
+    def search(self, query: str, limit: int = 4) -> list[Chunk]: ...
+
+
+class Bm25Retriever:
+    """Ranks chunks by how well their words match the question's words.
+
+    BM25 rewards a chunk for containing a query word, more so when the word
+    is rare in the index, and less so when the chunk is long. No model and no
+    database are needed, which keeps the backend small and free to host.
+    """
+
+    def __init__(
+        self,
+        chunks: list[Chunk],
+        ignore: Iterable[str] = (),
+        k1: float = 1.5,
+        b: float = 0.75,
+    ) -> None:
+        self._chunks = chunks
+        # Words that appear in nearly every question, such as the person's name.
+        self._ignore = frozenset(token for word in ignore for token in tokenise(word))
+        self._k1 = k1
+        self._b = b
+
+        # Words of the title and of the source label are counted twice: a
+        # match there ("Project", "Education") says more than one in the text.
+        self._counts = [
+            Counter(tokenise(c.source_label) * 2 + tokenise(c.title) * 2 + tokenise(c.text))
+            for c in chunks
+        ]
+        self._lengths = [sum(counts.values()) for counts in self._counts]
+        self._average_length = sum(self._lengths) / len(chunks) if chunks else 0.0
+
+        containing: Counter[str] = Counter()
+        for counts in self._counts:
+            containing.update(counts.keys())
+        total = len(chunks)
+        self._idf = {
+            word: math.log(1 + (total - n + 0.5) / (n + 0.5)) for word, n in containing.items()
+        }
+
+    def _score(self, words: list[str], index: int) -> float:
+        counts = self._counts[index]
+        length_factor = 1 - self._b + self._b * self._lengths[index] / self._average_length
+        score = 0.0
+        for word in words:
+            frequency = counts.get(word, 0)
+            if frequency:
+                score += self._idf[word] * frequency * (self._k1 + 1) / (frequency + self._k1 * length_factor)
+        return score
+
+    def search(self, query: str, limit: int = 4) -> list[Chunk]:
+        words = [w for w in translate_query(tokenise(query)) if w not in self._ignore]
+        if not words or not self._chunks:
+            return []
+        scored = [(self._score(words, i), i) for i in range(len(self._chunks))]
+        # Best first; equal scores keep the order of the index.
+        best = sorted((item for item in scored if item[0] > 0), key=lambda item: (-item[0], item[1]))
+        return [self._chunks[i] for _, i in best[:limit]]

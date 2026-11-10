@@ -1,0 +1,209 @@
+{
+  "projekt": [
+    "project"
+  ],
+  "projekten": [
+    "project"
+  ],
+  "arbete": [
+    "work",
+    "experience"
+  ],
+  "arbetat": [
+    "worked",
+    "work"
+  ],
+  "jobbat": [
+    "worked",
+    "work"
+  ],
+  "jobb": [
+    "work",
+    "experience"
+  ],
+  "utbildning": [
+    "education"
+  ],
+  "studerar": [
+    "education",
+    "student"
+  ],
+  "studerat": [
+    "education"
+  ],
+  "pluggar": [
+    "education",
+    "student"
+  ],
+  "universitet": [
+    "education"
+  ],
+  "högskola": [
+    "education"
+  ],
+  "examen": [
+    "education",
+    "degree"
+  ],
+  "kurser": [
+    "coursework",
+    "course"
+  ],
+  "kurs": [
+    "coursework",
+    "course"
+  ],
+  "erfarenhet": [
+    "experience"
+  ],
+  "erfarenheter": [
+    "experience"
+  ],
+  "praktik": [
+    "internship",
+    "intern",
+    "experience"
+  ],
+  "kunskaper": [
+    "skill"
+  ],
+  "kunskap": [
+    "skill"
+  ],
+  "färdigheter": [
+    "skill"
+  ],
+  "kompetens": [
+    "skill"
+  ],
+  "kompetenser": [
+    "skill"
+  ],
+  "kan": [
+    "skill"
+  ],
+  "teknik": [
+    "technology",
+    "skill"
+  ],
+  "tekniker": [
+    "technology",
+    "skill"
+  ],
+  "teknologier": [
+    "technology",
+    "skill"
+  ],
+  "verktyg": [
+    "tool",
+    "skill"
+  ],
+  "programmeringsspråk": [
+    "language",
+    "programming"
+  ],
+  "språk": [
+    "language"
+  ],
+  "maskininlärning": [
+    "machine",
+    "learning"
+  ],
+  "artificiell": [
+    "ai"
+  ],
+  "intelligens": [
+    "ai"
+  ],
+  "språkmodeller": [
+    "llm",
+    "language",
+    "model"
+  ],
+  "språkmodell": [
+    "llm",
+    "language",
+    "model"
+  ],
+  "agent": [
+    "agent"
+  ],
+  "agenter": [
+    "agent"
+  ],
+  "examensarbete": [
+    "thesis"
+  ],
+  "exjobb": [
+    "thesis"
+  ],
+  "tillgänglig": [
+    "availability",
+    "status"
+  ],
+  "söker": [
+    "seeking",
+    "status"
+  ],
+  "kontakt": [
+    "contact",
+    "email"
+  ],
+  "kontakta": [
+    "contact",
+    "email"
+  ],
+  "mejl": [
+    "email"
+  ],
+  "epost": [
+    "email"
+  ],
+  "sjukhus": [
+    "hospital"
+  ],
+  "sensorer": [
+    "sensor"
+  ],
+  "sensor": [
+    "sensor"
+  ],
+  "larm": [
+    "alert"
+  ],
+  "övervakning": [
+    "monitoring",
+    "metrics"
+  ],
+  "säkerhet": [
+    "security"
+  ],
+  "data": [
+    "data"
+  ],
+  "bakgrund": [
+    "about",
+    "education",
+    "experience"
+  ],
+  "vem": [
+    "about"
+  ],
+  "civilingenjör": [
+    "engineering",
+    "education"
+  ],
+  "ingenjör": [
+    "engineering"
+  ],
+  "student": [
+    "student",
+    "education"
+  ],
+  "trafikverket": [
+    "trafikverket"
+  ],
+  "sverige": [
+    "sweden"
+  ]
+}

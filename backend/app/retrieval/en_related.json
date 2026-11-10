@@ -1,0 +1,102 @@
+{
+  "study": [
+    "education"
+  ],
+  "studied": [
+    "education"
+  ],
+  "studie": [
+    "education"
+  ],
+  "university": [
+    "education"
+  ],
+  "school": [
+    "education"
+  ],
+  "degree": [
+    "education"
+  ],
+  "graduate": [
+    "education"
+  ],
+  "course": [
+    "coursework"
+  ],
+  "technology": [
+    "skill",
+    "tool",
+    "language"
+  ],
+  "tech": [
+    "skill",
+    "tool",
+    "language"
+  ],
+  "stack": [
+    "skill",
+    "tool"
+  ],
+  "framework": [
+    "skill",
+    "tool"
+  ],
+  "programming": [
+    "language",
+    "skill"
+  ],
+  "know": [
+    "skill"
+  ],
+  "job": [
+    "experience"
+  ],
+  "internship": [
+    "intern",
+    "experience"
+  ],
+  "employer": [
+    "experience"
+  ],
+  "company": [
+    "experience",
+    "organisation"
+  ],
+  "ml": [
+    "machine",
+    "learning"
+  ],
+  "llm": [
+    "llm",
+    "language",
+    "model"
+  ],
+  "available": [
+    "status",
+    "availability"
+  ],
+  "hire": [
+    "status",
+    "availability"
+  ],
+  "hiring": [
+    "status",
+    "availability"
+  ],
+  "email": [
+    "contact"
+  ],
+  "reach": [
+    "contact"
+  ],
+  "background": [
+    "education",
+    "experience"
+  ],
+  "repo": [
+    "github"
+  ],
+  "repository": [
+    "github"
+  ]
+}
