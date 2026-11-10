@@ -83,9 +83,13 @@ def test_nothing_is_returned_for_a_question_the_content_cannot_answer():
     assert retriever().search("What is the salary expectation?") == []
 
 
-def test_the_persons_own_name_alone_matches_nothing():
-    assert retriever().search("Test Person?") == []
-    assert retriever().search("Who is Test?") == []
+def test_a_question_about_the_person_in_general_gets_the_profile():
+    assert [c.id for c in retriever().search("Who is Test?")] == ["profile"]
+    assert [c.id for c in retriever().search("Tell me about Test Person")] == ["profile"]
+
+
+def test_the_name_with_an_unknown_topic_still_finds_nothing():
+    assert retriever().search("What is Test's salary?") == []
 
 
 def test_an_empty_question_returns_nothing():
@@ -163,3 +167,8 @@ def test_weak_matches_are_left_out_when_there_is_a_clear_best_match(real):
     ids = [c.id for c in real.search("Tell me about the SRE Agent project.", limit=6)]
     assert ids[0] == "project-sre-agent"
     assert "project-hospital-readmission" not in ids and "project-sensor-classification" not in ids
+
+
+@pytest.mark.parametrize("question", ["Who is Samir?", "Tell me about Samir", "Vem är Samir?", "Where does Samir live?"])
+def test_general_questions_about_the_person_find_the_profile(real, question):
+    assert real.search(question)[0].id == "profile"

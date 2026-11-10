@@ -98,5 +98,20 @@
   ],
   "repository": [
     "github"
+  ],
+  "live": [
+    "location"
+  ],
+  "lives": [
+    "location"
+  ],
+  "located": [
+    "location"
+  ],
+  "based": [
+    "location"
+  ],
+  "city": [
+    "location"
   ]
 }

@@ -1,6 +1,8 @@
 """The HTTP endpoints of the backend."""
 
+import asyncio
 import hashlib
+import ipaddress
 import json
 import logging
 import secrets
@@ -46,19 +48,33 @@ def _event(data: dict) -> str:
 
 
 def _visitor(request: Request, settings: Settings) -> str:
-    """The address the request came from. Used for the per-visitor limit only."""
+    """Who is asking, for the per-visitor limit only.
+
+    Behind a trusted proxy the visitor's address is the LAST entry of
+    X-Forwarded-For: the proxy appends it, while anything in front of it was
+    written by the client and could be invented to dodge the limit.
+    """
+    address = request.client.host if request.client else "unknown"
     if settings.trust_proxy:
-        forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+        forwarded = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
         if forwarded:
-            return forwarded
-    return request.client.host if request.client else "unknown"
+            address = forwarded
+    try:
+        parsed = ipaddress.ip_address(address)
+    except ValueError:
+        return address
+    if parsed.version == 6:
+        # One home connection owns a whole /64 block of IPv6 addresses, so the
+        # block counts as one visitor.
+        return str(ipaddress.ip_network(f"{address}/64", strict=False).network_address)
+    return address
 
 
 def _parse(raw: bytes, settings: Settings) -> list[Message] | None:
     """The conversation in a request body, or None when the body is not acceptable."""
     try:
         body = json.loads(raw)
-    except ValueError:
+    except (ValueError, RecursionError):  # not JSON, or nested absurdly deep
         return None
     if not isinstance(body, dict) or set(body) != {"messages"}:
         return None
@@ -72,6 +88,10 @@ def _parse(raw: bytes, settings: Settings) -> list[Message] | None:
         if message["role"] not in ("user", "assistant") or not isinstance(message["text"], str):
             return None
         if message["role"] == "user" and len(message["text"]) > settings.max_message_chars:
+            return None
+        try:
+            message["text"].encode("utf-8")
+        except UnicodeEncodeError:  # half of a character pair: cannot be sent on
             return None
 
     last = messages[-1]
@@ -113,23 +133,32 @@ async def chat(request: Request):
         duration = int((time.monotonic() - started) * 1000)
         log.info("chat status=%s chunks=%d ms=%d visitor=%s", status, chunks, duration, visitor_tag)
 
-    declared = request.headers.get("content-length", "0")
-    if not declared.isdigit() or int(declared) > MAX_BODY_BYTES:
+    # The size must be declared up front. A body sent without its length
+    # (in "chunks") would otherwise be read into memory before it could be
+    # measured, however large it is.
+    declared = request.headers.get("content-length")
+    if declared is None or not declared.isdigit():
+        record("invalid")
+        return _refuse(411, "invalid")
+    if int(declared) > MAX_BODY_BYTES:
         record("invalid")
         return _refuse(413, "invalid")
     raw = await request.body()
-    if len(raw) > MAX_BODY_BYTES:
-        record("invalid")
-        return _refuse(413, "invalid")
 
     messages = _parse(raw, settings)
     if messages is None:
         record("invalid")
         return _refuse(422, "invalid")
 
-    if not state.limiter.allow(visitor):
+    verdict = state.limiter.check(visitor)
+    if verdict == "limit":
         record("limit")
         return _refuse(429, "limit")
+    if verdict == "busy":
+        # Too many questions this minute from everyone. The chat window offers
+        # "Try again" for this, unlike for the final limits.
+        record("busy")
+        return _refuse(503, "busy")
 
     async def answer() -> AsyncIterator[str]:
         chunks: list[Chunk] = []
@@ -138,6 +167,10 @@ async def chat(request: Request):
             prompt = build_messages(messages, chunks, settings, state.subject_name)
             async for piece in state.provider.stream(prompt, settings.max_answer_tokens):
                 yield _event({"type": "text", "text": piece})
+        except asyncio.CancelledError:
+            # The visitor closed the page or the chat. Stop quietly.
+            record("cancelled", len(chunks))
+            raise
         except ProviderError as error:
             record(error.kind, len(chunks))
             yield _event({"type": "error", "reason": error.kind})

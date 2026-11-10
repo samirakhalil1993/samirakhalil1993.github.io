@@ -90,6 +90,7 @@ test.each(['limit', 'unavailable'] as const)('an error event "%s" is passed on, 
 
 test.each([
   [429, 'limit'],
+  [503, 'unavailable'],
   [500, 'unavailable'],
   [422, 'unavailable'],
   [413, 'unavailable'],
@@ -164,4 +165,15 @@ test('cancelling stops the reading and counts as a network failure', async () =>
   controller.abort()
   expect(await pending).toEqual({ ok: false, reason: 'network' })
   expect(pieces).toEqual(['One'])
+})
+
+test('reads events whose lines end the Windows way (as some proxies rewrite them)', async () => {
+  const { pieces, result } = await run(
+    streamed([
+      'data: {"type":"text","text":"Hi"}\r\n\r\n',
+      'data: {"type":"done","sources":[]}\r\n\r\n',
+    ]),
+  )
+  expect(pieces).toEqual(['Hi'])
+  expect(result).toEqual({ ok: true, sources: [] })
 })

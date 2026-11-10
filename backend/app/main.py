@@ -34,7 +34,11 @@ def _provider(settings: Settings) -> ChatProvider:
             "GROQ_API_KEY is missing. Put the key in backend/.env, "
             "or set PROVIDER=fake to run with fixed test answers."
         )
-    return GroqProvider(settings.groq_api_key, settings.groq_model)
+    return GroqProvider(
+        settings.groq_api_key,
+        settings.groq_model,
+        reasoning_effort=settings.groq_reasoning_effort,
+    )
 
 
 def _subject_name(chunks: list[Chunk]) -> str:
@@ -63,7 +67,9 @@ def create_app(
     app.state.provider = provider or _provider(settings)
     # The person's name is in almost every question, so it is not a search word.
     app.state.retriever = retriever or Bm25Retriever(chunks, ignore=name.split())
-    app.state.limiter = RateLimiter(settings.requests_per_hour, settings.requests_per_day, clock)
+    app.state.limiter = RateLimiter(
+        settings.requests_per_minute, settings.requests_per_hour, settings.requests_per_day, clock
+    )
 
     # Browsers only let the listed websites read this API's answers.
     app.add_middleware(

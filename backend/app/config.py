@@ -26,14 +26,20 @@ class Settings:
     # The key is left out of repr, so it cannot end up in a log line by accident.
     groq_api_key: str | None = field(default=None, repr=False)
     groq_model: str = "openai/gpt-oss-120b"
+    # How much the model "thinks" before answering: low, medium or high. Thinking
+    # uses up answer tokens, so low is enough here. None for models without it.
+    groq_reasoning_effort: str | None = "low"
     # "fake" answers with fixed text and needs no key; used for local runs and tests.
     provider: str = "groq"
     # Websites whose pages may call this API from the browser.
     allowed_origins: tuple[str, ...] = ("http://localhost:5173", "http://localhost:4173")
 
     # Usage limits. They keep the free plan of the model provider from running out.
+    # The free plan allows about 8,000 tokens a minute and 200,000 a day, and
+    # one question uses roughly 1,500 to 2,300.
+    requests_per_minute: int = 4  # all visitors together
     requests_per_hour: int = 20  # per visitor
-    requests_per_day: int = 300  # all visitors together
+    requests_per_day: int = 100  # all visitors together
     max_message_chars: int = 500
     max_messages: int = 31
 
@@ -41,7 +47,9 @@ class Settings:
     max_context_chars: int = 4000
     max_history_messages: int = 6
     max_history_chars: int = 2000
-    max_answer_tokens: int = 350
+    # Room for the model's short thinking plus the answer. The rules keep the
+    # answer itself short.
+    max_answer_tokens: int = 800
 
     # Turn on only behind a proxy that sets X-Forwarded-For itself.
     trust_proxy: bool = False
@@ -57,7 +65,13 @@ class Settings:
             for origin in env.get("ALLOWED_ORIGINS", "").split(",")
             if origin.strip()
         )
+        effort = env.get("GROQ_REASONING_EFFORT", "low").strip().lower() or "low"
+        if effort not in ("low", "medium", "high", "none"):
+            raise ValueError(f"GROQ_REASONING_EFFORT must be low, medium, high or none, got {effort!r}")
+
         return cls(
+            groq_reasoning_effort=None if effort == "none" else effort,
+            requests_per_minute=_number(env, "REQUESTS_PER_MINUTE", cls.requests_per_minute),
             groq_api_key=(env.get("GROQ_API_KEY") or "").strip() or None,
             groq_model=env.get("GROQ_MODEL", "").strip() or cls.groq_model,
             provider=provider,

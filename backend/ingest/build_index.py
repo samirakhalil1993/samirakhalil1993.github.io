@@ -53,7 +53,7 @@ def _read(content_dir: Path, name: str):
 def _profile(data: dict) -> list[Chunk]:
     text = _lines(
         f"{data['name']} – {data['title']}",
-        f"Location: {data['location']}",
+        f"Location: {data['name']} lives in {data['location']}",
         data["intro"],
         *data["about"],
     )

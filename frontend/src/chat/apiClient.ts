@@ -17,7 +17,7 @@ function toSource(raw: unknown): Source | null {
 
 /** The JSON of one `data: {...}` event, or null for anything else. */
 function parseEvent(block: string): Record<string, unknown> | null {
-  const line = block.split('\n').find((candidate) => candidate.startsWith('data:'))
+  const line = block.split(/\r?\n/).find((candidate) => candidate.startsWith('data:'))
   if (!line) return null
   try {
     const data: unknown = JSON.parse(line.slice(5))
@@ -62,7 +62,7 @@ export function createApiClient(apiUrl: string, fetchFn: typeof fetch = fetch): 
 
         // Events are separated by an empty line. The last part may be
         // incomplete, so it stays in the buffer until more arrives.
-        const blocks = buffer.split('\n\n')
+        const blocks = buffer.split(/\r?\n\r?\n/)
         buffer = blocks.pop() ?? ''
 
         for (const block of blocks) {

@@ -10,13 +10,15 @@ def test_defaults_when_nothing_is_set():
     assert settings.provider == "groq"
     assert settings.allowed_origins == ("http://localhost:5173", "http://localhost:4173")
     assert settings.requests_per_hour == 20
-    assert settings.requests_per_day == 300
+    assert settings.requests_per_day == 100
+    assert settings.requests_per_minute == 4
+    assert settings.groq_reasoning_effort == "low"
     assert settings.max_message_chars == 500
     assert settings.max_messages == 31
     assert settings.max_context_chars == 4000
     assert settings.max_history_messages == 6
     assert settings.max_history_chars == 2000
-    assert settings.max_answer_tokens == 350
+    assert settings.max_answer_tokens == 800
     assert settings.trust_proxy is False
 
 
@@ -64,3 +66,10 @@ def test_the_key_is_never_shown_when_settings_are_printed():
     settings = Settings.from_env({"GROQ_API_KEY": "gsk_secret_value"})
     assert "gsk_secret_value" not in repr(settings)
     assert "gsk_secret_value" not in str(settings)
+
+
+def test_reasoning_effort_can_be_switched_off_for_models_without_it():
+    assert Settings.from_env({"GROQ_REASONING_EFFORT": "none"}).groq_reasoning_effort is None
+    assert Settings.from_env({"GROQ_REASONING_EFFORT": "high"}).groq_reasoning_effort == "high"
+    with pytest.raises(ValueError, match="GROQ_REASONING_EFFORT"):
+        Settings.from_env({"GROQ_REASONING_EFFORT": "maximum"})

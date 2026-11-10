@@ -30,10 +30,12 @@ class Bm25Retriever:
         k1: float = 1.5,
         b: float = 0.75,
         min_share: float = 0.4,
+        fallback_id: str = "profile",
     ) -> None:
         self._chunks = chunks
         # Words that appear in nearly every question, such as the person's name.
         self._ignore = frozenset(token for word in ignore for token in tokenise(word))
+        self._fallback_id = fallback_id
         self._k1 = k1
         # A chunk must score at least this share of the best chunk's score.
         # It keeps pieces that only share a common word out of the answer.
@@ -68,9 +70,15 @@ class Bm25Retriever:
         return score
 
     def search(self, query: str, limit: int = 4) -> list[Chunk]:
-        words = [w for w in translate_query(tokenise(query)) if w not in self._ignore]
-        if not words or not self._chunks:
+        tokens = translate_query(tokenise(query))
+        words = [w for w in tokens if w not in self._ignore]
+        if not self._chunks:
             return []
+        if not words:
+            # "Who is <name>?": nothing left to search for but the person. The
+            # profile is the answer to that.
+            asked_about_person = any(token in self._ignore for token in tokens)
+            return [c for c in self._chunks if c.id == self._fallback_id][:1] if asked_about_person else []
         scored = [(self._score(words, i), i) for i in range(len(self._chunks))]
         # Best first; equal scores keep the order of the index.
         best = sorted((item for item in scored if item[0] > 0), key=lambda item: (-item[0], item[1]))

@@ -148,3 +148,15 @@ come first in the prompt with the found content in a marked block. The
 Groq key exists only as an environment variable. Log lines hold a status,
 counts and timings, and a visitor code that changes at every start; never
 message text or addresses.
+
+## 16. Limits sized to the free plan, and a visitor address that cannot be invented
+
+A security review of the backend changed four things. A request must state
+its size up front, so an endless body is refused unread. Behind a proxy the
+visitor is the last address in `X-Forwarded-For` (the one the proxy added),
+and an IPv6 network counts as one visitor, so the per-visitor limit cannot be
+dodged by inventing addresses. The limits follow the provider's token
+allowance: 4 questions a minute and 100 a day for everyone, 20 an hour per
+visitor. And the model is told to think briefly and not to send its
+thinking, with an answer that ran out of room treated as a failure, so a
+visitor never gets an empty bubble.

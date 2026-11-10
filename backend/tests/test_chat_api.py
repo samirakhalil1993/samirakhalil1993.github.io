@@ -81,7 +81,7 @@ def test_the_model_gets_the_rules_first_and_the_question_last():
     assert "Test Person's portfolio website" in messages[0]["content"]
     assert "Triages alerts." in messages[0]["content"]
     assert [m["content"] for m in messages[1:]] == ["Hi", "Hello", "project-alpha please"]
-    assert provider.last_max_tokens == 350
+    assert provider.last_max_tokens == 800
     assert retriever.queries == ["project-alpha please"]
 
 
@@ -183,7 +183,7 @@ def test_the_daily_total_limit():
 
 def test_visitors_are_told_apart_by_the_forwarded_address_only_behind_a_trusted_proxy():
     client, _, _ = make(REQUESTS_PER_HOUR="1", TRUST_PROXY="true")
-    assert ask(client, headers={"x-forwarded-for": "1.1.1.1, 10.0.0.1"}).status_code == 200
+    assert ask(client, headers={"x-forwarded-for": "1.1.1.1"}).status_code == 200
     assert ask(client, headers={"x-forwarded-for": "2.2.2.2"}).status_code == 200
     assert ask(client, headers={"x-forwarded-for": "1.1.1.1"}).status_code == 429
 
@@ -266,3 +266,85 @@ def test_at_most_three_sources_are_shown():
     client = TestClient(create_app(settings, provider=FakeProvider(["ok"]), retriever=All(), chunks=CHUNKS))
     sources = events(ask(client))[-1]["sources"]
     assert [s["label"] for s in sources] == ["Label 0", "Label 1", "Label 2"]
+
+
+def test_a_visitor_cannot_get_a_fresh_limit_by_inventing_forwarded_addresses():
+    # A proxy appends the real address at the END of the list. Whatever a
+    # client writes in front of it must not count.
+    client, _, _ = make(REQUESTS_PER_HOUR="1", TRUST_PROXY="true")
+    assert ask(client, headers={"x-forwarded-for": "10.0.0.1, 7.7.7.7"}).status_code == 200
+    assert ask(client, headers={"x-forwarded-for": "10.0.0.2, 7.7.7.7"}).status_code == 429
+    assert ask(client, headers={"x-forwarded-for": "10.0.0.3,7.7.7.7"}).status_code == 429
+
+
+def test_addresses_from_one_ipv6_network_count_as_one_visitor():
+    client, _, _ = make(REQUESTS_PER_HOUR="1", TRUST_PROXY="true")
+    assert ask(client, headers={"x-forwarded-for": "2001:db8:1:2:aaaa::1"}).status_code == 200
+    assert ask(client, headers={"x-forwarded-for": "2001:db8:1:2:bbbb::2"}).status_code == 429
+    assert ask(client, headers={"x-forwarded-for": "2001:db8:1:3::1"}).status_code == 200
+
+
+def test_a_body_sent_without_its_length_is_refused_unread():
+    client, provider, _ = make()
+    read = {"chunks": 0}
+
+    def endless():
+        for _ in range(2000):  # about 130 MB if it were read to the end
+            read["chunks"] += 1
+            yield b"x" * 65_536
+
+    response = client.post("/api/chat", content=endless(), headers={"content-type": "application/json"})
+    assert response.status_code == 411
+    assert response.json() == {"reason": "invalid"}
+    assert provider.last_messages is None
+
+
+def test_deeply_nested_json_is_refused_not_a_crash():
+    client, _, _ = make()
+    response = client.post("/api/chat", content=b"[" * 30_000, headers={"content-type": "application/json"})
+    assert response.status_code == 422
+    assert response.json() == {"reason": "invalid"}
+
+
+def test_text_that_cannot_be_sent_on_is_refused():
+    client, provider, _ = make()
+    # A JSON escape for half of a character pair: valid JSON, but not valid text.
+    body = b'{"messages": [{"role": "user", "text": "bad ' + b"\\ud800" + b' text"}]}'
+    response = client.post("/api/chat", content=body, headers={"content-type": "application/json"})
+    assert response.status_code == 422
+    assert provider.last_messages is None
+
+
+def test_too_many_questions_in_one_minute_get_a_try_again_answer_not_the_final_limit():
+    clock = Clock()
+    client, _, _ = make(clock=clock, REQUESTS_PER_MINUTE="2", TRUST_PROXY="true")
+    statuses = [ask(client, headers={"x-forwarded-for": f"5.5.5.{n}"}).status_code for n in range(3)]
+    assert statuses == [200, 200, 503]
+    assert ask(client, headers={"x-forwarded-for": "5.5.5.9"}).json() == {"reason": "busy"}
+    clock.now += 61
+    assert ask(client, headers={"x-forwarded-for": "5.5.5.9"}).status_code == 200
+
+
+def test_the_daily_default_fits_the_free_plan():
+    settings = Settings.from_env({})
+    assert settings.requests_per_day == 100
+    assert settings.requests_per_minute == 4
+
+
+def test_a_cancelled_answer_is_logged(caplog):
+    import asyncio
+
+    from app.api import _event  # noqa: F401  (import check only)
+
+    class Slow:
+        async def stream(self, messages, max_tokens):
+            yield "first"
+            raise asyncio.CancelledError
+
+    client, _, _ = make(provider=Slow())
+    with caplog.at_level(logging.INFO, logger="portfolio.chat"):
+        try:
+            ask(client)
+        except BaseException:
+            pass
+    assert "status=cancelled" in "\n".join(r.getMessage() for r in caplog.records)

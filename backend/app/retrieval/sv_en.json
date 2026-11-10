@@ -205,5 +205,11 @@
   ],
   "sverige": [
     "sweden"
+  ],
+  "bor": [
+    "location"
+  ],
+  "stad": [
+    "location"
   ]
 }
