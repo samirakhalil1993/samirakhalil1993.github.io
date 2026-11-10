@@ -63,3 +63,21 @@ All animation (scroll fade-in, card expansion, the availability pulse) is
 plain CSS inside a "motion allowed" block. A visitor who has asked their
 system to reduce motion gets none of it, and sections are never hidden when
 the browser cannot watch scrolling. No animation library is used.
+
+## 8. Contact form through Web3Forms, without a CAPTCHA
+
+The form posts directly from the browser to Web3Forms, which emails the
+message. No server of our own is involved and the project holds no email
+password. The access key in `content/contact.json` is public by design: it
+can only be used to send a message to the inbox it belongs to. The inbox
+address itself is set at Web3Forms and is not in the code.
+
+Spam protection is a hidden trap field that people never see, plus the
+service's own filter. A CAPTCHA was left out on purpose: it would load a
+third-party script on every visit and add a step for every real visitor.
+If spam becomes a problem, hCaptcha (supported by Web3Forms) can be added
+to the form without changing its structure.
+
+The sending code never throws. Every outcome, including a timeout after 15
+seconds, becomes a plain result that the form turns into a message, and a
+failed send always keeps what the visitor typed.

@@ -9,7 +9,9 @@ const rowClass =
 export function Contact({ contact }: { contact: ContactInfo }) {
   const links = (
     <div className="rounded-card border border-border bg-card p-6">
-      <p className="mb-5 leading-relaxed text-muted">The best way to reach me is by email.</p>
+      <p className="mb-5 leading-relaxed text-muted">
+        {contact.formAccessKey ? 'Or reach me directly.' : 'The best way to reach me is by email.'}
+      </p>
       <div className="space-y-3">
         <a href={`mailto:${contact.email}`} className={rowClass}>
           <span className="font-semibold">Email</span>

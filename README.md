@@ -11,9 +11,9 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 3 (interactions) is finished. Project cards expand in place, small
-screens have a menu button, the CV opens in a preview window, and sections
-fade in while scrolling. Phase 4 adds the contact form.
+Phase 4 (contact form) is finished. The form is built and tested, and it
+appears on the site as soon as the access key is added (see "Turn on the
+contact form" below). Phase 5 adds the chat window of the AI assistant.
 
 ## Run the site on your computer
 
@@ -90,6 +90,30 @@ Open `content/availability.json` and change the text after `"status"`:
 ```
 
 Save the file. The page updates at once while `npm run dev` is running.
+
+### Turn on the contact form
+
+The form sends messages through a service called Web3Forms, which forwards
+them to your inbox. The service must know which inbox to use, and it
+identifies your form by an access key. Until that key is in the content
+files, the site hides the form and shows only the direct links.
+
+1. Go to https://web3forms.com and enter the email address that should
+   receive the messages. This is where the inbox is chosen; the address is
+   never written in this project.
+2. Web3Forms emails you an access key. It looks like
+   `0a1b2c3d-1234-4567-8901-234567890abc`.
+3. Add the key to `content/contact.json`:
+
+   ```json
+   "formAccessKey": "paste-your-key-here"
+   ```
+
+4. Run `npm test`, then `npm run dev`, and send yourself one test message.
+
+The key is not a secret. It only allows sending a message to your inbox,
+which the form on the public site does anyway, so it is safe to keep in the
+repository. The free plan allows 250 messages a month.
 
 ### Replace the CV
 
