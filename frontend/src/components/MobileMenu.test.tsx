@@ -42,3 +42,11 @@ test('exists only on small screens', () => {
   const { container } = render(<MobileMenu activeId={null} />)
   expect((container.firstElementChild as HTMLElement).className).toMatch(/\bmd:hidden\b/)
 })
+
+test('the open menu scrolls inside the screen when it is taller than the screen', () => {
+  render(<MobileMenu activeId={null} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+  const nav = screen.getByRole('navigation', { name: 'Mobile' })
+  expect(nav.className).toMatch(/max-h-\[calc\(100dvh-4rem\)\]/)
+  expect(nav.className).toMatch(/\boverflow-y-auto\b/)
+})

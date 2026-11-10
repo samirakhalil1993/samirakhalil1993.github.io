@@ -90,6 +90,15 @@
     grid-template-rows: 1fr;
   }
 
+  /* On paper nothing scrolls into view, so every section is simply shown. */
+  @media print {
+    [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

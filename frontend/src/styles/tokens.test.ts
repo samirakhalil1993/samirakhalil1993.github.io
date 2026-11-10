@@ -70,3 +70,7 @@ test.each(["[data-reveal='hidden']", 'pulse-dot', 'transition: grid-template-row
     expect(cssWithoutMotionBlock()).not.toContain(rule)
   },
 )
+
+test('a printed page shows every section, even ones never scrolled to', () => {
+  expect(css).toMatch(/@media print\s*\{[^}]*\[data-reveal\]\s*\{[^}]*opacity: 1 !important/)
+})

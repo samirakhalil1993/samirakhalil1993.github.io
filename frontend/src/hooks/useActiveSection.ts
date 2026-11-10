@@ -1,12 +1,35 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Tells which section the visitor is currently reading.
- *
- * A section counts as "in view" while it crosses the upper part of the
- * window, just below the sticky navbar. When several are in view at once
- * (short sections on a tall screen), the one that comes first on the page
- * wins. Returns null until a section has been in view.
+ * How far below the top of the window a section's top edge must be to count
+ * as "reached", in pixels. A link jump puts a section 80 px from the top
+ * (see scroll-padding-top in tokens.css), so the line sits a little lower.
+ */
+const LINE = 100
+
+function findActive<Id extends string>(ids: readonly Id[]): Id | null {
+  let active: Id | null = null
+  let last: Id | null = null
+
+  // The active section is the last one whose top edge has passed the line.
+  for (const id of ids) {
+    const element = document.getElementById(id)
+    if (!element) continue
+    last = id
+    if (element.getBoundingClientRect().top <= LINE) active = id
+  }
+
+  // The last section is often too short to reach the line. At the very
+  // bottom of the page it is the one being read.
+  const pageHeight = document.documentElement.scrollHeight
+  const atBottom = pageHeight > window.innerHeight && window.innerHeight + window.scrollY >= pageHeight - 2
+  return atBottom ? last : active
+}
+
+/**
+ * Tells which section the visitor is currently reading: the last section
+ * whose top edge has reached the line just under the sticky navbar.
+ * Returns null while no section has reached it.
  */
 export function useActiveSection<Id extends string>(ids: readonly Id[]): Id | null {
   const [activeId, setActiveId] = useState<Id | null>(null)
@@ -17,26 +40,15 @@ export function useActiveSection<Id extends string>(ids: readonly Id[]): Id | nu
 
   useEffect(() => {
     const orderedIds = idList.split(',') as Id[]
-    const inView = new Set<string>()
+    const update = () => setActiveId(findActive(orderedIds))
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) inView.add(entry.target.id)
-          else inView.delete(entry.target.id)
-        }
-        const first = orderedIds.find((id) => inView.has(id))
-        // With nothing in view (between two sections), keep the last one.
-        if (first) setActiveId(first)
-      },
-      { rootMargin: '-80px 0px -60% 0px' },
-    )
-
-    for (const id of orderedIds) {
-      const element = document.getElementById(id)
-      if (element) observer.observe(element)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
     }
-    return () => observer.disconnect()
   }, [idList])
 
   return activeId

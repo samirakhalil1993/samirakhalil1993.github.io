@@ -47,7 +47,8 @@ export function MobileMenu({ activeId }: { activeId: SectionId | null }) {
         <nav
           id="mobile-menu"
           aria-label="Mobile"
-          className="absolute inset-x-0 top-16 border-b border-border bg-card px-4 py-2 shadow-lg"
+          // On a short screen (a phone held sideways) the menu scrolls inside itself.
+          className="absolute inset-x-0 top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border bg-card px-4 py-2 shadow-lg"
         >
           <ul>
             {sections.map((section) => {

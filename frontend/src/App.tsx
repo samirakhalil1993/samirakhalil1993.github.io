@@ -11,6 +11,7 @@ import { Projects } from './components/Projects'
 import { Skills } from './components/Skills'
 import { content } from './content'
 import { useActiveSection } from './hooks/useActiveSection'
+import { useHashScroll } from './hooks/useHashScroll'
 import { sections } from './sections'
 
 const sectionIds = sections.map((section) => section.id)
@@ -25,6 +26,7 @@ const currentYear = new Date().getFullYear()
 function App() {
   const activeId = useActiveSection(sectionIds)
   const [cvOpen, setCvOpen] = useState(false)
+  useHashScroll()
 
   return (
     <>
