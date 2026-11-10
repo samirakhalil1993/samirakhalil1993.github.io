@@ -81,3 +81,25 @@ to the form without changing its structure.
 The sending code never throws. Every outcome, including a timeout after 15
 seconds, becomes a plain result that the form turns into a message, and a
 failed send always keeps what the visitor typed.
+
+## 9. One contract between the chat window and whatever answers it
+
+The chat window never calls a server itself. It calls a `ChatClient`: one
+function that receives the conversation, reports each new piece of the
+answer, and resolves with the sources or a failure reason
+(`frontend/src/chat/types.ts`). The demo client and the future backend
+client both follow this contract, so connecting the real AI in Phase 6 does
+not change the window, the conversation rules or their tests.
+
+The conversation rules (one answer at a time, 500 characters per message,
+15 questions per conversation, retry after a failure) live in `useChat`,
+apart from the markup, and are tested without drawing anything.
+
+## 10. An honest demo mode
+
+Before the backend exists, the chat can only give prepared answers. Shown
+without comment, that would pass off canned text as an AI assistant. So the
+demo client builds its answers only from the content files, the window
+shows a "Demo" badge and a notice, and `chat.json` can switch the chat off
+entirely. The chat window is not loaded lazily yet; that is a performance
+item for Phase 7.

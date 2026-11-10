@@ -11,9 +11,9 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 4 (contact form) is built and tested. The form appears on the site as
-soon as the access key is added (see "Turn on the contact form" below); the
-last step of the phase is one real test message arriving in the inbox. Phase 5 adds the chat window of the AI assistant.
+Phase 5 (chat interface) is finished. The chat button and window work, in
+demo mode: the answers are prepared text built from the content files, and
+the window says so. Phase 6 adds the real AI backend.
 
 ## Run the site on your computer
 
@@ -120,6 +120,26 @@ to you.
 The key is not a secret. It only allows sending a message to your inbox,
 which the form on the public site does anyway, so it is safe to keep in the
 repository. The free plan allows 250 messages a month.
+
+### The chat: demo mode, texts and suggested questions
+
+Until the AI backend exists, the chat cannot really answer questions. To
+keep the site honest, it runs in demo mode: it gives prepared answers taken
+from the content files and shows a "Demo" badge. Everything about the chat
+is set in `content/chat.json`:
+
+| Setting | What it does |
+| --- | --- |
+| `demo` | `true` shows the chat with prepared answers and the Demo badge. `false` hides the chat completely (as long as no `apiUrl` is set). |
+| `demoNotice` | The line under the title that explains demo mode. |
+| `title`, `welcome`, `placeholder` | The texts of the window. |
+| `suggestedQuestions` | The questions offered before the first message. |
+| `errorMessage`, `limitMessage` | Shown when an answer fails, or when the usage limit is reached. |
+| `apiUrl` | The address of the AI backend. It is added in Phase 6 and switches the chat to live mode. |
+
+**Before the site goes public, set `"demo": false` unless the AI backend is
+connected.** A visitor should not meet a chat that can only give prepared
+answers.
 
 ### Replace the CV
 
