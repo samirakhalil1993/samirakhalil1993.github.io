@@ -94,7 +94,8 @@ const contactSchema = z.strictObject({
   email: z.email(),
   linkedin: httpsUrl,
   github: httpsUrl,
-  cvPath: text,
+  // A path relative to the site, so it also works when the site is in a sub-folder.
+  cvPath: z.string().regex(/^(?!\/)[\w./-]+\.pdf$/, 'Must be a relative path to a .pdf file'),
   formEndpoint: httpsUrl.optional(),
 })
 
@@ -135,7 +136,7 @@ export const contentSchema = z
     profile: profileSchema,
     availability: availabilitySchema,
     skills: z.array(skillCategorySchema).min(1),
-    projects: z.array(projectSchema),
+    projects: z.array(projectSchema).min(1),
     education: z.array(educationEntrySchema),
     experience: z.array(experienceEntrySchema),
     contact: contactSchema,

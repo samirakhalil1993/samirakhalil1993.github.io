@@ -27,8 +27,8 @@ export function Education({ entries }: { entries: EducationEntry[] }) {
               <>
                 <p className="mt-5 mb-3 text-sm font-semibold">Relevant coursework</p>
                 <ul className="flex flex-wrap gap-2">
-                  {entry.coursework.map((course) => (
-                    <Tag key={course}>{course}</Tag>
+                  {entry.coursework.map((course, index) => (
+                    <Tag key={`${index}-${course}`}>{course}</Tag>
                   ))}
                 </ul>
               </>

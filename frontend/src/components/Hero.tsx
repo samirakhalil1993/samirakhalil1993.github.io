@@ -5,13 +5,13 @@ type HeroProps = {
   availability: Availability
 }
 
-/** The first screen: who Samir is, what he is looking for, and his photo. */
+/** The first screen: name, title, what the person is looking for, and the photo. */
 export function Hero({ profile, availability }: HeroProps) {
   return (
     <section
       id="home"
       aria-labelledby="home-heading"
-      className="grid scroll-mt-20 items-center gap-10 py-14 md:grid-cols-[3fr_2fr] md:py-24"
+      className="grid items-center gap-10 py-14 md:grid-cols-[3fr_2fr] md:py-24"
     >
       <div className="min-w-0">
         <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm">

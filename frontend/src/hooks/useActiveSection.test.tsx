@@ -6,13 +6,16 @@ type Callback = (entries: Partial<IntersectionObserverEntry>[]) => void
 
 let fire: Callback
 let observed: Element[]
+let created: number
 
 beforeEach(() => {
   observed = []
+  created = 0
   // A stand-in for the browser's IntersectionObserver that lets the test
   // decide when a section "scrolls into view".
   class FakeObserver {
     constructor(callback: Callback) {
+      created += 1
       fire = callback
     }
     observe(element: Element) {
@@ -57,4 +60,10 @@ test('keeps the last section when another one leaves the view', () => {
   act(() => fire([{ target: document.getElementById('two')!, isIntersecting: true }]))
   act(() => fire([{ target: document.getElementById('one')!, isIntersecting: false }]))
   expect(screen.getByRole('status').textContent).toBe('two')
+})
+
+test('does not start over when re-rendered with the same ids', () => {
+  const { rerender } = render(<Page />)
+  rerender(<Page />)
+  expect(created).toBe(1)
 })

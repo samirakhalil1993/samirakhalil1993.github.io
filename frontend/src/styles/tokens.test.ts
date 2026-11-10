@@ -48,3 +48,7 @@ test('smooth scrolling is only on when motion is allowed', () => {
   // Outside that media query there must be no other smooth-scroll rule.
   expect(css.match(/scroll-behavior: smooth/g)).toHaveLength(1)
 })
+
+test('jumps and keyboard focus stay clear of the sticky navbar', () => {
+  expect(css).toMatch(/html\s*\{[^}]*scroll-padding-top: 5rem/)
+})

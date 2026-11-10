@@ -4,7 +4,7 @@ import { Section } from './Section'
 const rowClass =
   'flex min-h-11 flex-col justify-center gap-0.5 rounded-control border border-border px-4 py-2 transition-colors hover:border-accent sm:flex-row sm:items-center sm:justify-between sm:gap-4'
 
-/** Ways to reach Samir. The contact form is added in Phase 4. */
+/** Ways to get in touch. The contact form is added in Phase 4. */
 export function Contact({ contact }: { contact: ContactInfo }) {
   return (
     <Section id="contact" title="Contact">

@@ -23,15 +23,15 @@ export function Experience({ entries }: { entries: ExperienceEntry[] }) {
 
             <p className="mt-4 leading-relaxed">{entry.summary}</p>
             <ul className="mt-3 list-disc space-y-2 pl-5 leading-relaxed text-muted marker:text-accent">
-              {entry.responsibilities.map((responsibility) => (
-                <li key={responsibility}>{responsibility}</li>
+              {entry.responsibilities.map((responsibility, index) => (
+                <li key={`${index}-${responsibility}`}>{responsibility}</li>
               ))}
             </ul>
 
             {entry.technologies.length > 0 && (
               <ul className="mt-5 flex flex-wrap gap-2">
-                {entry.technologies.map((technology) => (
-                  <Tag key={technology}>{technology}</Tag>
+                {entry.technologies.map((technology, index) => (
+                  <Tag key={`${index}-${technology}`}>{technology}</Tag>
                 ))}
               </ul>
             )}

@@ -61,6 +61,22 @@ test('rejects a project image without a description', () => {
   expect(() => validateContent(c)).toThrow(/imageAlt/)
 })
 
+test('rejects an empty project list', () => {
+  const c = clone()
+  c.projects = []
+  c.experience.forEach((entry: { projectId?: string }) => delete entry.projectId)
+  expect(() => validateContent(c)).toThrow(/projects/)
+})
+
+test.each(['/cv.pdf', 'javascript:alert(1)', 'cv.docx', 'https://example.com/cv.pdf'])(
+  'rejects the CV path %s (it must be a relative .pdf path)',
+  (cvPath) => {
+    const c = clone()
+    c.contact.cvPath = cvPath
+    expect(() => validateContent(c)).toThrow(/cvPath/)
+  },
+)
+
 test('rejects a knowledge source that is not a content file', () => {
   const c = clone()
   c.knowledgeSources.contentFiles.push('secrets')

@@ -33,6 +33,11 @@
     outline-offset: 2px;
   }
 
+  /* Keeps section jumps and keyboard focus clear of the sticky navbar. */
+  html {
+    scroll-padding-top: 5rem;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;

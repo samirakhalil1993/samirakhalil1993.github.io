@@ -6,7 +6,7 @@ const contact = {
   email: 'test@example.com',
   linkedin: 'https://www.linkedin.com/in/test',
   github: 'https://github.com/test',
-  cvPath: '/cv.pdf',
+  cvPath: 'cv.pdf',
 }
 
 test('has the Contact heading and a mail link that shows the address', () => {

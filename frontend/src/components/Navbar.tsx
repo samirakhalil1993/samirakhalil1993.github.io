@@ -24,8 +24,10 @@ export function Navbar({ name, activeId }: NavbarProps) {
                 key={section.id}
                 href={`#${section.id}`}
                 aria-current={isActive ? 'true' : undefined}
-                className={`flex min-h-11 items-center rounded-control px-3 text-sm transition-colors ${
-                  isActive ? 'text-link' : 'text-muted hover:text-text'
+                className={`flex min-h-11 items-center border-b-2 px-3 text-sm transition-colors ${
+                  isActive
+                    ? 'border-accent text-link'
+                    : 'border-transparent text-muted hover:text-text'
                 }`}
               >
                 {section.label}

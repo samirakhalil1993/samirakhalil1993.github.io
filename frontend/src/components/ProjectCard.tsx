@@ -6,7 +6,7 @@ export function ProjectCard({ project }: { project: Project }) {
   return (
     <article
       id={`project-${project.id}`}
-      className="flex min-w-0 scroll-mt-20 flex-col overflow-hidden rounded-card border border-border bg-card break-words transition-colors hover:border-accent/60"
+      className="flex min-w-0 flex-col overflow-hidden rounded-card border border-border bg-card break-words transition-colors hover:border-accent/60"
     >
       {project.image ? (
         <img
@@ -29,8 +29,8 @@ export function ProjectCard({ project }: { project: Project }) {
         <p className="mt-3 leading-relaxed text-muted">{project.summary}</p>
 
         <ul className="mt-5 flex flex-wrap gap-2">
-          {project.tags.map((tag) => (
-            <Tag key={tag}>{tag}</Tag>
+          {project.tags.map((tag, index) => (
+            <Tag key={`${index}-${tag}`}>{tag}</Tag>
           ))}
         </ul>
 

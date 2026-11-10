@@ -14,8 +14,8 @@ export function Skills({ categories }: { categories: SkillCategory[] }) {
           >
             <h3 className="mb-4 font-semibold">{category.name}</h3>
             <ul className="flex flex-wrap gap-2">
-              {category.tags.map((tag) => (
-                <Tag key={tag}>{tag}</Tag>
+              {category.tags.map((tag, index) => (
+                <Tag key={`${index}-${tag}`}>{tag}</Tag>
               ))}
             </ul>
           </div>

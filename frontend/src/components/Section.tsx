@@ -12,8 +12,7 @@ export function Section({ id, title, children }: SectionProps) {
   const headingId = `${id}-heading`
 
   return (
-    // scroll-mt keeps the heading clear of the sticky navbar after a jump.
-    <section id={id} aria-labelledby={headingId} className="scroll-mt-20 py-12 md:py-16">
+    <section id={id} aria-labelledby={headingId} className="py-12 md:py-16">
       <h2 id={headingId} className="mb-8 text-2xl font-semibold tracking-tight md:text-3xl">
         {title}
       </h2>

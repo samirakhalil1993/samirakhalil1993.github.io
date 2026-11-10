@@ -31,3 +31,9 @@ test('hides the section links on small screens', () => {
     /\bhidden\b.*\bmd:flex\b/,
   )
 })
+
+test('marks the active link with an underline, not only with colour', () => {
+  render(<Navbar name="Test Person" activeId="projects" />)
+  expect(screen.getByRole('link', { name: 'Projects' }).className).toMatch(/\bborder-accent\b/)
+  expect(screen.getByRole('link', { name: 'About' }).className).toMatch(/\bborder-transparent\b/)
+})
