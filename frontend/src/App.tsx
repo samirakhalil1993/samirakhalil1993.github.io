@@ -1,31 +1,44 @@
+import { About } from './components/About'
+import { Contact } from './components/Contact'
+import { Education } from './components/Education'
+import { Experience } from './components/Experience'
+import { Footer } from './components/Footer'
+import { Hero } from './components/Hero'
+import { Navbar } from './components/Navbar'
+import { Projects } from './components/Projects'
+import { Skills } from './components/Skills'
 import { content } from './content'
+import { useActiveSection } from './hooks/useActiveSection'
+import { sections } from './sections'
+
+const sectionIds = sections.map((section) => section.id)
+
+// Read once when the page loads; a page is not kept open across New Year.
+const currentYear = new Date().getFullYear()
 
 /**
- * Phase 1 shell: a single card that proves the design tokens and the content
- * files work together. Phase 2 replaces this body with the real sections.
+ * The whole page. This is the only place that reads the content files;
+ * every component below gets its text handed to it.
  */
 function App() {
-  const { profile, availability } = content
+  const activeId = useActiveSection(sectionIds)
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-xl rounded-card border border-border bg-card p-8">
-        <h1 className="text-3xl font-semibold tracking-tight">{profile.name}</h1>
-        <p className="mt-2 text-muted">{profile.title}</p>
+    <>
+      <Navbar name={content.profile.name} activeId={activeId} />
 
-        <p className="mt-6 flex items-center gap-2 text-sm">
-          <span
-            aria-hidden="true"
-            className={`size-2 shrink-0 rounded-full ${availability.active ? 'bg-accent' : 'bg-muted'}`}
-          />
-          {availability.status}
-        </p>
+      <main className="mx-auto max-w-5xl px-4 md:px-6">
+        <Hero profile={content.profile} availability={content.availability} />
+        <About paragraphs={content.profile.about} />
+        <Skills categories={content.skills} />
+        <Projects projects={content.projects} />
+        <Education entries={content.education} />
+        <Experience entries={content.experience} />
+        <Contact contact={content.contact} />
+      </main>
 
-        <p className="mt-8 border-t border-border pt-4 text-sm text-muted">
-          Site under construction.
-        </p>
-      </div>
-    </main>
+      <Footer profile={content.profile} contact={content.contact} year={currentYear} />
+    </>
   )
 }
 

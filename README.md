@@ -11,9 +11,10 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 1 (project foundation) is finished. The site shows a small
-"under construction" card with the name, title and availability status.
-The real sections come in Phase 2.
+Phase 2 (core portfolio) is finished. The page shows every section with real
+content: hero, about, skills, projects, education, experience, contact and
+footer. Phase 3 adds the expandable project cards, the mobile menu and the CV
+preview.
 
 ## Run the site on your computer
 
@@ -44,6 +45,9 @@ cd frontend
 npm test         # runs all checks
 npm run build    # runs the checks, then builds the finished site into dist/
 ```
+
+Only `npm test` and `npm run build` check the content. `npm run dev` shows
+whatever is in the files, even when something is missing.
 
 `npm run build` refuses to build when a check fails. This is on purpose: a
 broken content file can never reach the published site.
