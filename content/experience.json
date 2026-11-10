@@ -2,7 +2,7 @@
   "entries": [
     {
       "id": "trafikverket",
-      "title": "AI Engineering Intern – Incident-Triage Agent",
+      "title": "AI Engineering Student – Incident-Triage Agent",
       "organisation": "Trafikverket (Swedish Transport Administration)",
       "context": "Ten-person student team, via BTH",
       "period": "Sep 2026 – Jan 2027",
@@ -25,6 +25,7 @@
       "id": "axiogreen",
       "title": "Machine Learning Engineer – Sensor Classification",
       "organisation": "Axiogreen",
+      "context": "Internship",
       "location": "Sweden",
       "period": "2026 – Present",
       "summary": "Classifying building and energy sensor types from metadata and time-series measurements.",
