@@ -11,10 +11,9 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 2 (core portfolio) is finished. The page shows every section with real
-content: hero, about, skills, projects, education, experience, contact and
-footer. Phase 3 adds the expandable project cards, the mobile menu and the CV
-preview.
+Phase 3 (interactions) is finished. Project cards expand in place, small
+screens have a menu button, the CV opens in a preview window, and sections
+fade in while scrolling. Phase 4 adds the contact form.
 
 ## Run the site on your computer
 
@@ -91,6 +90,33 @@ Open `content/availability.json` and change the text after `"status"`:
 ```
 
 Save the file. The page updates at once while `npm run dev` is running.
+
+### Replace the CV
+
+The site shows one CV file everywhere (hero, contact section and preview
+window), so replacing that one file updates all of them. Save your CV as a
+PDF named `cv.pdf` and put it in `frontend/public/`, replacing the file that
+is there. The file in the repository now is only a placeholder.
+
+### Add details and an image to a project
+
+Each project in `content/projects.json` has a `details` object. Every field
+is optional, and a part without text is simply not shown, so you can fill
+them in one at a time:
+
+```json
+"image": "images/sre-agent.png",
+"imageAlt": "Diagram of the agent reading metrics, logs and code",
+"details": {
+  "problemGoal": "What problem the project solves.",
+  "solutionArchitecture": "How the solution works.",
+  "contributions": "What you did yourself.",
+  "resultsChallenges": "Results, limits and lessons."
+}
+```
+
+Images go in `frontend/public/images/`. An `image` must always come with an
+`imageAlt` text that describes it; the checks fail without one.
 
 ## Folder overview
 

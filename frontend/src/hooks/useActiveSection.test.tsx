@@ -67,3 +67,23 @@ test('does not start over when re-rendered with the same ids', () => {
   rerender(<Page />)
   expect(created).toBe(1)
 })
+
+test('picks the earlier section when two are in view at once', () => {
+  render(<Page />)
+  act(() => fire([{ target: document.getElementById('two')!, isIntersecting: true }]))
+  act(() => fire([{ target: document.getElementById('one')!, isIntersecting: true }]))
+  expect(screen.getByRole('status').textContent).toBe('one')
+})
+
+test('moves on to the later section when the earlier one leaves', () => {
+  render(<Page />)
+  act(() =>
+    fire([
+      { target: document.getElementById('one')!, isIntersecting: true },
+      { target: document.getElementById('two')!, isIntersecting: true },
+    ]),
+  )
+  expect(screen.getByRole('status').textContent).toBe('one')
+  act(() => fire([{ target: document.getElementById('one')!, isIntersecting: false }]))
+  expect(screen.getByRole('status').textContent).toBe('two')
+})

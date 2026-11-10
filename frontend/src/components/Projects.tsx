@@ -12,8 +12,8 @@ export function Projects({ projects }: { projects: Project[] }) {
 
   return (
     <Section id="projects" title="Featured Projects">
-      {/* items-start: an open card grows alone; its neighbour keeps its height. */}
-      <div className="grid items-start gap-6 md:grid-cols-2">
+      {/* Cards in the same row always share one height, open or closed. */}
+      <div className="grid gap-6 md:grid-cols-2">
         {projects.map((project) => (
           <ProjectCard
             key={project.id}

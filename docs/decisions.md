@@ -51,3 +51,15 @@ Tests in `frontend/src/styles/tokens.test.ts` keep these rules true.
 The site starts with Inter, bundled with the site so no request goes to an
 external font service. The font is one token (`--font-sans` in
 `frontend/src/styles/tokens.css`) and can be changed in one place.
+
+## 7. The browser's own dialog, and animation in CSS only
+
+The CV preview and the enlarged project image use the browser's `<dialog>`
+element. The browser then keeps keyboard focus inside the window, closes it
+on Escape and returns focus to the button that opened it, so none of that
+has to be written and tested by hand.
+
+All animation (scroll fade-in, card expansion, the availability pulse) is
+plain CSS inside a "motion allowed" block. A visitor who has asked their
+system to reduce motion gets none of it, and sections are never hidden when
+the browser cannot watch scrolling. No animation library is used.
