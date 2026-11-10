@@ -29,11 +29,15 @@ class Bm25Retriever:
         ignore: Iterable[str] = (),
         k1: float = 1.5,
         b: float = 0.75,
+        min_share: float = 0.4,
     ) -> None:
         self._chunks = chunks
         # Words that appear in nearly every question, such as the person's name.
         self._ignore = frozenset(token for word in ignore for token in tokenise(word))
         self._k1 = k1
+        # A chunk must score at least this share of the best chunk's score.
+        # It keeps pieces that only share a common word out of the answer.
+        self._min_share = min_share
         self._b = b
 
         # Words of the title and of the source label are counted twice: a
@@ -70,4 +74,7 @@ class Bm25Retriever:
         scored = [(self._score(words, i), i) for i in range(len(self._chunks))]
         # Best first; equal scores keep the order of the index.
         best = sorted((item for item in scored if item[0] > 0), key=lambda item: (-item[0], item[1]))
-        return [self._chunks[i] for _, i in best[:limit]]
+        if not best:
+            return []
+        threshold = best[0][0] * self._min_share
+        return [self._chunks[i] for score, i in best[:limit] if score >= threshold]

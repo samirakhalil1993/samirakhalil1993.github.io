@@ -103,3 +103,48 @@ demo client builds its answers only from the content files, the window
 shows a "Demo" badge and a notice, and `chat.json` can switch the chat off
 entirely. The chat window is not loaded lazily yet; that is a performance
 item for Phase 7.
+
+## 11. Groq as the model provider
+
+The budget is free tier only. Of the providers compared in November 2026,
+Groq was the only one with a standing free plan, published limits and no
+payment card. Google Gemini's terms allow only paid use for sites with
+visitors in the European Economic Area, and OpenAI has no free usage. The
+provider sits behind a small interface (`backend/app/providers/base.py`), and
+the model id is a setting, so either can be changed without touching the
+rest.
+
+## 12. Keyword search for retrieval
+
+Groq offers no embedding model, a second provider would have received every
+visitor's question, and a local embedding model needs more memory than free
+hosts give. The knowledge base is also small (about 15 pieces). So retrieval
+is BM25 keyword search with two small word lists: Swedish question words to
+English, and English question words to the words the content uses. It sits
+behind a `Retriever` interface, so embeddings can replace it later. Pieces
+that score far below the best match are dropped, which keeps unrelated text
+out of both the prompt and the source labels.
+
+## 13. Sources are the pieces that were found
+
+The source labels under an answer are the top pieces retrieval found (at
+most three), not citations chosen by the model. This cannot be faked by the
+model and needs no parsing of its text; the cost is that a label can appear
+for a piece the answer did not end up using.
+
+## 14. The wire format between site and backend
+
+`POST /api/chat` takes `{"messages": [{"role", "text"}]}` and answers with a
+stream of `data: {json}` events: `text` pieces, then exactly one `done` (with
+sources) or `error` (with a reason). Refusals before the stream are plain
+JSON with status 422, 413 or 429. Both sides are tested against this format,
+and the site's API client keeps only the fields it knows from each source.
+
+## 15. What the backend trusts and what it records
+
+Everything from the browser is treated as untrusted: message shapes and
+sizes are checked, assistant messages are cut short, and the rules always
+come first in the prompt with the found content in a marked block. The
+Groq key exists only as an environment variable. Log lines hold a status,
+counts and timings, and a visitor code that changes at every start; never
+message text or addresses.

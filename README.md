@@ -11,9 +11,12 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 5 (chat interface) is finished. The chat button and window work, in
-demo mode: the answers are prepared text built from the content files, and
-the window says so. Phase 6 adds the real AI backend.
+Phase 6 (AI backend) is built and tested with a stand-in for the AI model.
+The backend lives in `backend/` and has its own guide,
+[`backend/README.md`](backend/README.md), which includes the steps for the
+first real test with a Groq key. Until the chat is connected (`apiUrl` in
+`content/chat.json`), it stays in demo mode. Phase 7 is testing and
+deployment.
 
 ## Run the site on your computer
 
@@ -135,12 +138,16 @@ is set in `content/chat.json`:
 | `title`, `welcome`, `placeholder` | The texts of the window. |
 | `suggestedQuestions` | The questions offered before the first message. |
 | `errorMessage`, `limitMessage` | Shown when an answer fails, or when the usage limit is reached. |
-| `apiUrl` | The address of the AI backend. Leave it out for now: it is added in Phase 6, and until then setting it only hides the chat. |
+| `apiUrl` | The address of the AI backend. When it is set, the chat sends questions there and shows the AI notice; the Demo badge disappears. Use `http://localhost:8000` while testing on your own computer. |
+| `liveNotice` | The line under the title when the chat is connected to the AI backend. |
 
 In demo mode, a question is answered only if it contains a word the demo
 knows (project, skill, experience, education, contact, or a general word
 such as "who" or "why"). If you change the suggested questions, run
 `npm test`: a check fails when one of them would get no real answer.
+
+After changing any content, rebuild the assistant's index (see
+`backend/README.md`), or the assistant keeps answering from the old text.
 
 **Before the site goes public, set `"demo": false` unless the AI backend is
 connected.** A visitor should not meet a chat that can only give prepared
@@ -178,5 +185,6 @@ Images go in `frontend/public/images/`. An `image` must always come with an
 ```
 content/     all text and settings, as JSON
 frontend/    the website (React, Vite, TypeScript, Tailwind CSS)
+backend/     the AI assistant's server (Python, FastAPI)
 docs/        design decisions and implementation plans
 ```

@@ -157,3 +157,9 @@ def test_every_real_suggested_question_finds_something(real):
 def test_a_question_about_all_projects_finds_only_projects(real):
     ids = [c.id for c in real.search("What projects has Samir worked on?")]
     assert len(ids) == 4 and all(i.startswith("project-") for i in ids)
+
+
+def test_weak_matches_are_left_out_when_there_is_a_clear_best_match(real):
+    ids = [c.id for c in real.search("Tell me about the SRE Agent project.", limit=6)]
+    assert ids[0] == "project-sre-agent"
+    assert "project-hospital-readmission" not in ids and "project-sensor-classification" not in ids
