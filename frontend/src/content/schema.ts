@@ -146,6 +146,16 @@ export const contentSchema = z
     checkUniqueIds(content.projects, 'projects', ctx)
     checkUniqueIds(content.experience, 'experience', ctx)
 
+    content.projects.forEach((project, index) => {
+      if (project.image !== undefined && project.imageAlt === undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['projects', index, 'imageAlt'],
+          message: `Project "${project.id}" has an image but no imageAlt description`,
+        })
+      }
+    })
+
     const projectIds = new Set(content.projects.map((project) => project.id))
     content.experience.forEach((entry, index) => {
       if (entry.projectId !== undefined && !projectIds.has(entry.projectId)) {

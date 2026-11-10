@@ -55,6 +55,12 @@ test('rejects two projects with the same id', () => {
   expect(() => validateContent(c)).toThrow(/sre-agent/)
 })
 
+test('rejects a project image without a description', () => {
+  const c = clone()
+  c.projects[0].image = 'images/sre.png'
+  expect(() => validateContent(c)).toThrow(/imageAlt/)
+})
+
 test('rejects a knowledge source that is not a content file', () => {
   const c = clone()
   c.knowledgeSources.contentFiles.push('secrets')
