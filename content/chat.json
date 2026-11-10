@@ -1,4 +1,8 @@
 {
+  "title": "Ask about Samir",
+  "demo": true,
+  "demoNotice": "Demo: these are prepared example answers. The real assistant is coming soon.",
+  "errorMessage": "The assistant is not available right now. You can reach Samir in the contact section.",
   "welcome": "Hi! I can answer questions about Samir's projects, experience, education and skills.",
   "placeholder": "Ask about Samir's work",
   "limitMessage": "The assistant has reached its limit for now. You can reach Samir directly below.",

@@ -107,6 +107,14 @@ const knowledgeSourcesSchema = z.strictObject({
 })
 
 const chatSchema = z.strictObject({
+  title: text,
+  // Demo mode shows prepared answers with a visible notice. It is only used
+  // while no apiUrl is set.
+  demo: z.boolean(),
+  demoNotice: text,
+  // Address of the AI backend. Without it there is no live chat.
+  apiUrl: httpsUrl.optional(),
+  errorMessage: text,
   welcome: text,
   placeholder: text,
   limitMessage: text,

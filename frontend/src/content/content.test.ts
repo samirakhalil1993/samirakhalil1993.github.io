@@ -105,6 +105,26 @@ test('findBannedText still catches a phone number next to an access key', () => 
   expect(findBannedText(`"${sampleKey}" call 070-1234567`)).not.toEqual([])
 })
 
+test('the chat settings are complete and in demo mode', () => {
+  expect(content.chat.title).toBe('Ask about Samir')
+  expect(content.chat.demo).toBe(true)
+  expect(content.chat.demoNotice).toMatch(/prepared example answers/)
+  expect(content.chat.errorMessage).toMatch(/not available/)
+  expect(content.chat.apiUrl).toBeUndefined()
+})
+
+test('rejects a chat API address that is not https', () => {
+  const c = clone()
+  c.chat.apiUrl = 'http://example.com'
+  expect(() => validateContent(c)).toThrow(/apiUrl/)
+})
+
+test('rejects chat settings without a title', () => {
+  const c = clone()
+  delete c.chat.title
+  expect(() => validateContent(c)).toThrow(/title/)
+})
+
 test('rejects a knowledge source that is not a content file', () => {
   const c = clone()
   c.knowledgeSources.contentFiles.push('secrets')
