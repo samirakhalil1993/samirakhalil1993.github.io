@@ -96,7 +96,8 @@ const contactSchema = z.strictObject({
   github: httpsUrl,
   // A path relative to the site, so it also works when the site is in a sub-folder.
   cvPath: z.string().regex(/^(?!\/)[\w./-]+\.pdf$/, 'Must be a relative path to a .pdf file'),
-  formEndpoint: httpsUrl.optional(),
+  // The public key from web3forms.com. Without it the contact form is not shown.
+  formAccessKey: z.uuid().optional(),
 })
 
 const knowledgeSourcesSchema = z.strictObject({

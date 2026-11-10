@@ -14,8 +14,12 @@ const bannedWords = [/ExampleCo/i]
  */
 const phoneNumber = /\+?\d(?:[\s().-]{0,2}\d){8,}/
 
+/** The shape of a form access key. Its digit groups can look like a phone number. */
+const uuid = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi
+
 /** Returns every banned piece of text found, or an empty list. */
-export function findBannedText(text: string): string[] {
+export function findBannedText(rawText: string): string[] {
+  const text = rawText.replace(uuid, '')
   const found: string[] = []
   for (const pattern of [...bannedWords, phoneNumber]) {
     const match = text.match(pattern)

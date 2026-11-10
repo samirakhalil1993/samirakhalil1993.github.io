@@ -77,6 +77,34 @@ test.each(['/cv.pdf', 'javascript:alert(1)', 'cv.docx', 'https://example.com/cv.
   },
 )
 
+const sampleKey = '0a1b2c3d-1234-4567-8901-234567890abc'
+
+test('accepts a Web3Forms access key', () => {
+  const c = clone()
+  c.contact.formAccessKey = sampleKey
+  expect(() => validateContent(c)).not.toThrow()
+})
+
+test('rejects an access key that is not a UUID', () => {
+  const c = clone()
+  c.contact.formAccessKey = 'abc'
+  expect(() => validateContent(c)).toThrow(/formAccessKey/)
+})
+
+test('rejects the old formEndpoint field', () => {
+  const c = clone()
+  c.contact.formEndpoint = 'https://example.com/form'
+  expect(() => validateContent(c)).toThrow(/formEndpoint/)
+})
+
+test('findBannedText ignores an access key, although its digits resemble a phone number', () => {
+  expect(findBannedText(`"formAccessKey": "${sampleKey}"`)).toEqual([])
+})
+
+test('findBannedText still catches a phone number next to an access key', () => {
+  expect(findBannedText(`"${sampleKey}" call 070-1234567`)).not.toEqual([])
+})
+
 test('rejects a knowledge source that is not a content file', () => {
   const c = clone()
   c.knowledgeSources.contentFiles.push('secrets')

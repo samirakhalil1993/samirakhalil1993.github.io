@@ -74,3 +74,7 @@ test.each(["[data-reveal='hidden']", 'pulse-dot', 'transition: grid-template-row
 test('a printed page shows every section, even ones never scrolled to', () => {
   expect(css).toMatch(/@media print\s*\{[^}]*\[data-reveal\]\s*\{[^}]*opacity: 1 !important/)
 })
+
+test.each(['bg', 'card'])('the border of form fields is visible on %s', (surface) => {
+  expect(contrastRatio(token('control-border'), token(surface))).toBeGreaterThanOrEqual(3)
+})

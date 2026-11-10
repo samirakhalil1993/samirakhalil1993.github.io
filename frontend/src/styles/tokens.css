@@ -16,6 +16,9 @@
   /* Button background. Darker than the accent so white text stays readable. */
   --color-button: #2563EB;
   --color-border: #2A2F3A;
+  /* The border of form fields. Stronger than the decorative border, so a
+     field can be seen as a field. */
+  --color-control-border: #6B7280;
   --radius-card: 12px;
   --radius-control: 8px;
   --font-sans: "Inter Variable", system-ui, sans-serif;
