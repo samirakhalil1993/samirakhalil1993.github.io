@@ -19,10 +19,8 @@ export function ProjectCard({ project }: { project: Project }) {
         // Neutral placeholder until the project has an image.
         <div
           aria-hidden="true"
-          className="flex aspect-video w-full items-center justify-center border-b border-border bg-bg/60 text-sm text-muted"
-        >
-          Image coming soon
-        </div>
+          className="aspect-video w-full border-b border-border bg-bg/60"
+        />
       )}
 
       <div className="flex flex-1 flex-col p-6">

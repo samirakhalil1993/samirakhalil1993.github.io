@@ -53,7 +53,9 @@ test('shows the context line and project link only when present', () => {
     '#project-alpha',
   )
   expect(within(b).queryByRole('link')).toBeNull()
-  expect(b.textContent).not.toMatch(/undefined|·\s*$/)
+  // No empty line is left behind where the missing context and location would be.
+  expect([...b.querySelectorAll('p')].every((p) => p.textContent!.trim() !== '')).toBe(true)
+  expect(b.querySelectorAll('p')).toHaveLength(3)
 })
 
 test('renders no technology list when there are no technologies', () => {

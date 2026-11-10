@@ -51,6 +51,8 @@ test('shows the image with its description, or a placeholder without one', () =>
   const [a, b] = screen.getAllByRole('article')
   expect(within(a).getByRole('img', { name: 'Alpha diagram' }).getAttribute('src')).toBe('a.png')
   expect(within(b).queryByRole('img')).toBeNull()
+  // The placeholder is a plain block: no "coming soon" text on the live site.
+  expect(b.querySelector('[aria-hidden="true"]')?.textContent).toBe('')
 })
 
 test('renders nothing when there are no projects', () => {
