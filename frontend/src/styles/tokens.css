@@ -11,6 +11,8 @@
   --color-text: #F8FAFC;
   --color-muted: #A1A1AA;
   --color-accent: #3B82F6;
+  /* Blue text such as links. Lighter than the accent so it stays readable on cards. */
+  --color-link: #60A5FA;
   /* Button background. Darker than the accent so white text stays readable. */
   --color-button: #2563EB;
   --color-border: #2A2F3A;

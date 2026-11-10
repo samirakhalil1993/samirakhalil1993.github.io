@@ -32,13 +32,19 @@ index file that the backend loads into memory. This keeps hosting free. The
 retriever sits behind an interface, so a database such as PostgreSQL with
 pgvector can replace it later without changing the rest of the backend.
 
-## 5. A darker blue for button backgrounds
+## 5. Three blues, each for one job
 
-The accent colour `#3B82F6` with white text has a contrast of 3.68 to 1,
-below the 4.5 to 1 needed for readable text. The accent stays `#3B82F6` for
-borders, links, focus rings and indicators. Button backgrounds use
-`#2563EB`, which gives 5.17 to 1 with white text. A test in
-`frontend/src/styles/tokens.test.ts` keeps both rules true.
+The accent colour `#3B82F6` from the design cannot be used for everything,
+because text needs a contrast of at least 4.5 to 1 to be readable:
+
+- White text on the accent has only 3.68 to 1, so **button backgrounds** use
+  the darker `#2563EB` (5.17 to 1 with white text).
+- Accent-coloured text on a card has only 4.33 to 1, so **blue text such as
+  links** uses the lighter `#60A5FA` (6.3 to 1 on a card).
+- The **accent** itself stays `#3B82F6` for borders, focus rings, the active
+  navigation marker and indicators, where the text rule does not apply.
+
+Tests in `frontend/src/styles/tokens.test.ts` keep these rules true.
 
 ## 6. Inter as the starting font
 

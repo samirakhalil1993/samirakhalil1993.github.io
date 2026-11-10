@@ -30,6 +30,9 @@ test.each([
   ['muted', 'bg', 4.5],
   ['muted', 'card', 4.5],
   ['accent', 'bg', 4.5],
+  // Blue text (links) must be readable on both surfaces.
+  ['link', 'bg', 4.5],
+  ['link', 'card', 4.5],
 ])('%s on %s has a contrast of at least %d', (fg, bg, min) => {
   expect(contrastRatio(token(fg), token(bg))).toBeGreaterThanOrEqual(min)
 })

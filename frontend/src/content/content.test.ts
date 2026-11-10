@@ -1,4 +1,7 @@
+import { readdirSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import { expect, test } from 'vitest'
+import { findBannedText } from './banned'
 import { content } from './index'
 import { rawContent } from './raw'
 import { validateContent } from './schema'
@@ -29,10 +32,14 @@ test('rejects an empty string', () => {
   expect(() => validateContent(c)).toThrow(/name/)
 })
 
-test('accepts a project with only the required fields', () => {
+test('accepts projects and experience entries with only the required fields', () => {
   const c = clone()
   c.projects = [{ id: 'p', title: 'T', summary: 'S', tags: ['x'], details: {} }]
-  c.experience.forEach((entry: { projectId?: string }) => delete entry.projectId)
+  c.experience.forEach((entry: { projectId?: string; context?: string; location?: string }) => {
+    delete entry.projectId
+    delete entry.context
+    delete entry.location
+  })
   expect(() => validateContent(c)).not.toThrow()
 })
 
@@ -60,10 +67,51 @@ test('rejects a contact link that is not https', () => {
   expect(() => validateContent(c)).toThrow(/github/)
 })
 
-test('contains no banned text', () => {
-  const text = JSON.stringify(rawContent)
-  expect(text).not.toMatch(/ExampleCo/i)
-  expect(text).not.toMatch(/\+46|073[\s-]?916/)
+// The content folder as it is on disk. The backend will read these files
+// directly, so the checks below look at the files, not at the joined object.
+const contentDir = path.resolve(import.meta.dirname, '../../../content')
+const contentFiles = readdirSync(contentDir).sort()
+
+test('the content folder holds exactly the nine known files', () => {
+  expect(contentFiles).toEqual([
+    'availability.json',
+    'chat.json',
+    'contact.json',
+    'education.json',
+    'experience.json',
+    'knowledge-sources.json',
+    'profile.json',
+    'projects.json',
+    'skills.json',
+  ])
+})
+
+test.each([
+  ['skills.json', 'categories'],
+  ['projects.json', 'projects'],
+  ['education.json', 'entries'],
+  ['experience.json', 'entries'],
+])('%s has no keys besides "%s"', (file, key) => {
+  const parsed = JSON.parse(readFileSync(path.join(contentDir, file), 'utf8'))
+  expect(Object.keys(parsed)).toEqual([key])
+})
+
+test.each([
+  ['the banned company name', '"notes": "Worked at ExampleCo AB"'],
+  ['an international phone number', '"phone": "+46 70 123 45 67"'],
+  ['a phone number with a 00 prefix', 'call 0046 70 123 45 67'],
+  ['a phone number with brackets', '(070) 123 45 67'],
+  ['a phone number with a dash', '070-1234567'],
+])('findBannedText catches %s', (_name, text) => {
+  expect(findBannedText(text)).not.toEqual([])
+})
+
+test('findBannedText accepts ordinary numbers and dates', () => {
+  expect(findBannedText('2025 - 2026, Sep 2026 – Jan 2027, 7.5 million, about 130 sensors')).toEqual([])
+})
+
+test.each(contentFiles)('%s contains no banned text', (file) => {
+  expect(findBannedText(readFileSync(path.join(contentDir, file), 'utf8'))).toEqual([])
 })
 
 test('holds the agreed headline facts', () => {
