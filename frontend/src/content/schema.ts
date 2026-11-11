@@ -114,15 +114,19 @@ const chatSchema = z.strictObject({
   demoNotice: text,
   // Shown when the chat is connected to the AI backend.
   liveNotice: text,
-  // Address of the AI backend. Without it there is no live chat. It must be
-  // https, except on your own computer, where the backend runs on http.
+  // Address of the AI backend. Without it there is no live chat. This is the
+  // public address that gets published, so it must be https, must not point
+  // at your own computer, and is the bare address with nothing after it.
+  // (For local work the address comes from frontend/.env.development.)
   apiUrl: z
     .string()
     .regex(
-      /^(https:\/\/[^\s/]+|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)(\/[^\s]*)?$/,
-      'Must be an https:// address (or http://localhost while developing)',
+      /^https:\/\/(?!localhost\b|127\.0\.0\.1\b)[^\s/?#]+$/,
+      'Must be a public https:// address with no path, for example https://my-api.example.com',
     )
     .optional(),
+  // Shown when a live answer takes long to start (the backend was asleep).
+  wakingMessage: text,
   errorMessage: text,
   welcome: text,
   placeholder: text,

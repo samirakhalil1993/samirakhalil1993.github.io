@@ -15,6 +15,23 @@ type ChatWindowProps = {
   onSectionLink: () => void
 }
 
+/** After this long without any text, a live answer is probably waiting for a sleeping backend. */
+export const WAKING_AFTER_MS = 5000
+
+/** True once `active` has stayed true for `ms`; false again as soon as it ends. */
+function useSlow(active: boolean, ms: number) {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    if (!active) return
+    const timer = setTimeout(() => setSlow(true), ms)
+    return () => {
+      clearTimeout(timer)
+      setSlow(false)
+    }
+  }, [active, ms])
+  return slow
+}
+
 /** From this many characters the counter is shown, so it does not distract earlier. */
 const COUNTER_FROM = 400
 
@@ -26,6 +43,10 @@ export function ChatWindow(props: ChatWindowProps) {
   // Demo answers are only given while no AI backend is connected.
   const live = Boolean(chat.apiUrl)
   const demo = chat.demo && !live
+
+  // Only a live answer can be slow to start; demo answers come from the page.
+  const waitingId = turns.findLast((turn) => turn.role === 'assistant' && turn.status === 'waiting')?.id
+  const waking = useSlow(live && waitingId !== undefined, WAKING_AFTER_MS)
 
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
@@ -59,7 +80,7 @@ export function ChatWindow(props: ChatWindowProps) {
   useEffect(() => {
     const list = listRef.current
     if (list) list.scrollTop = list.scrollHeight
-  }, [turns])
+  }, [turns, waking])
 
   function sendDraft() {
     if (!canSend) return
@@ -157,6 +178,11 @@ export function ChatWindow(props: ChatWindowProps) {
             ))}
           </ul>
         </div>
+
+        {/* Always on the page, so a screen reader announces the text when it appears. */}
+        <p role="status" className={waking ? 'mt-3 text-sm text-muted' : 'sr-only'}>
+          {waking ? chat.wakingMessage : ''}
+        </p>
       </div>
 
       {limitReached ? (

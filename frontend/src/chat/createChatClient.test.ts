@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { content } from '../content'
-import { createChatClient } from './createChatClient'
+import { createChatClient, resolveApiUrl } from './createChatClient'
 
 const signal = () => new AbortController().signal
 
@@ -42,4 +42,24 @@ test('with neither, there is no chat', () => {
   expect(
     createChatClient({ ...content, chat: { ...content.chat, demo: false, apiUrl: undefined } }),
   ).toBeNull()
+})
+
+test('a published build always uses the address from chat.json', () => {
+  expect(resolveApiUrl('https://api.example.com', 'production', 'http://localhost:8000')).toBe(
+    'https://api.example.com',
+  )
+  expect(resolveApiUrl(undefined, 'production', 'http://localhost:8000')).toBeUndefined()
+})
+
+test.each(['development', 'e2e'])('in %s mode a local address replaces it', (mode) => {
+  expect(resolveApiUrl('https://api.example.com', mode, 'http://localhost:8000')).toBe(
+    'http://localhost:8000',
+  )
+})
+
+test('without a local address the one from chat.json is used', () => {
+  expect(resolveApiUrl('https://api.example.com', 'development', undefined)).toBe(
+    'https://api.example.com',
+  )
+  expect(resolveApiUrl('https://api.example.com', 'development', '')).toBe('https://api.example.com')
 })

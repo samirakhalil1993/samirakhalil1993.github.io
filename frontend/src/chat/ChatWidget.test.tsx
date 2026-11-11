@@ -9,6 +9,7 @@ const chat: ChatConfig = {
   demo: true,
   demoNotice: 'Demo: prepared answers.',
   liveNotice: 'Answers are written by an AI model.',
+  wakingMessage: 'The assistant is waking up.',
   errorMessage: 'The assistant is not available right now.',
   welcome: 'Hi! Ask me something.',
   placeholder: 'Ask a question',
@@ -307,4 +308,94 @@ test('in demo mode the AI notice is not shown', () => {
   setup()
   open()
   expect(within(dialog()).queryByText('Answers are written by an AI model.')).toBeNull()
+})
+
+const live: ChatConfig = { ...chat, apiUrl: 'https://api.example.com' }
+const status = () => within(dialog()).getByRole('status')
+const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms))
+
+test('a live answer that is slow to start shows the waking notice', () => {
+  vi.useFakeTimers()
+  try {
+    setup(live)
+    open()
+    type('Hello')
+    pressEnter()
+    expect(status().textContent).toBe('')
+    wait(4999)
+    expect(status().textContent).toBe('')
+    wait(1)
+    expect(status().textContent).toBe('The assistant is waking up.')
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('the waking notice goes away when the answer starts', () => {
+  vi.useFakeTimers()
+  try {
+    const { emit } = setup(live)
+    open()
+    type('Hello')
+    pressEnter()
+    wait(5000)
+    emit('Hi')
+    expect(status().textContent).toBe('')
+    // It does not come back while the rest of the answer arrives.
+    wait(10000)
+    expect(status().textContent).toBe('')
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('an answer that starts in time never shows the waking notice', () => {
+  vi.useFakeTimers()
+  try {
+    const { emit } = setup(live)
+    open()
+    type('Hello')
+    pressEnter()
+    wait(3000)
+    emit('Hi')
+    wait(10000)
+    expect(status().textContent).toBe('')
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('the waking notice goes away when the answer fails, and returns on a slow retry', async () => {
+  vi.useFakeTimers()
+  try {
+    const { finish } = setup(live)
+    open()
+    type('Hello')
+    pressEnter()
+    wait(5000)
+    await finish({ ok: false, reason: 'network' })
+    expect(status().textContent).toBe('')
+
+    fireEvent.click(within(dialog()).getByRole('button', { name: 'Try again' }))
+    wait(4999)
+    expect(status().textContent).toBe('')
+    wait(1)
+    expect(status().textContent).toBe('The assistant is waking up.')
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('demo answers never show the waking notice', () => {
+  vi.useFakeTimers()
+  try {
+    setup()
+    open()
+    type('Hello')
+    pressEnter()
+    wait(60000)
+    expect(status().textContent).toBe('')
+  } finally {
+    vi.useRealTimers()
+  }
 })

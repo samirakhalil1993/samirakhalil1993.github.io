@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChatWidget } from './chat/ChatWidget'
-import { createChatClient } from './chat/createChatClient'
+import { chatClient, chatSettings } from './chat/setup'
 import { About } from './components/About'
 import { Contact } from './components/Contact'
 import { CvModal } from './components/CvModal'
@@ -18,15 +18,13 @@ import { sections } from './sections'
 
 const sectionIds = sections.map((section) => section.id)
 
-// Who answers the chat: the AI backend, the demo, or nobody (see chat.json).
-const chatClient = createChatClient(content)
-
 // Read once when the page loads; a page is not kept open across New Year.
 const currentYear = new Date().getFullYear()
 
 /**
- * The whole page. This is the only place that reads the content files;
- * every component below gets its text handed to it.
+ * The whole page. Apart from the chat setup (chat/setup.ts), this is the only
+ * place that reads the content files; every component below gets its text
+ * handed to it.
  */
 function App() {
   const activeId = useActiveSection(sectionIds)
@@ -59,7 +57,7 @@ function App() {
         name={content.profile.name}
       />
 
-      {chatClient && <ChatWidget chat={content.chat} client={chatClient} />}
+      {chatClient && <ChatWidget chat={chatSettings} client={chatClient} />}
 
       <Footer profile={content.profile} contact={content.contact} year={currentYear} />
     </>

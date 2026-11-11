@@ -2,6 +2,10 @@ node_modules/
 dist/
 .env
 .env.*
+# Tracked on purpose: they hold setting names and local addresses, no secrets.
+!.env.example
+!.env.development
+!.env.e2e
 .DS_Store
 .superpowers/
 .venv/

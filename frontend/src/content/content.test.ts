@@ -117,7 +117,7 @@ test('the chat has a notice for live mode', () => {
   expect(content.chat.liveNotice).toMatch(/AI model/)
 })
 
-test.each(['https://api.example.com', 'http://localhost:8000', 'http://127.0.0.1:8000'])(
+test.each(['https://api.example.com', 'https://samir-portfolio-api.onrender.com'])(
   'accepts the chat API address %s',
   (apiUrl) => {
     const c = clone()
@@ -126,16 +126,36 @@ test.each(['https://api.example.com', 'http://localhost:8000', 'http://127.0.0.1
   },
 )
 
+// The address in chat.json is the one that gets published. A local test
+// address, or one with a path the code would not expect, must stop the build.
+test.each([
+  'http://example.com',
+  'http://localhost:8000',
+  'http://127.0.0.1:8000',
+  'https://localhost',
+  'https://localhost:8000',
+  'https://127.0.0.1:8000',
+  'https://api.example.com/',
+  'https://api.example.com/api',
+  'https://api.example.com?x=1',
+  'https://api.example.com#x',
+  'https://api example.com',
+])('rejects the chat API address %s', (apiUrl) => {
+  const c = clone()
+  c.chat.apiUrl = apiUrl
+  expect(() => validateContent(c)).toThrow(/apiUrl/)
+})
+
+test('rejects chat settings without a waking message', () => {
+  const c = clone()
+  delete c.chat.wakingMessage
+  expect(() => validateContent(c)).toThrow(/wakingMessage/)
+})
+
 test('rejects chat settings without a live notice', () => {
   const c = clone()
   delete c.chat.liveNotice
   expect(() => validateContent(c)).toThrow(/liveNotice/)
-})
-
-test('rejects a chat API address that is not https', () => {
-  const c = clone()
-  c.chat.apiUrl = 'http://example.com'
-  expect(() => validateContent(c)).toThrow(/apiUrl/)
 })
 
 test('rejects chat settings without a title', () => {
