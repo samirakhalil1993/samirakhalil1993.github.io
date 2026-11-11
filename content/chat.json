@@ -1,6 +1,7 @@
 {
   "title": "Ask about Samir",
-  "demo": true,
+  "demo": false,
+  "apiUrl": "https://samir-portfolio-api.onrender.com",
   "demoNotice": "Demo: these are prepared example answers. The real assistant is coming soon.",
   "liveNotice": "Answers are written by an AI model (via Groq) from this site's content and may contain mistakes.",
   "wakingMessage": "The assistant is waking up. This can take up to a minute.",

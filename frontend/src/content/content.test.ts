@@ -105,12 +105,13 @@ test('findBannedText still catches a phone number next to an access key', () => 
   expect(findBannedText(`"${sampleKey}" call 070-1234567`)).not.toEqual([])
 })
 
-test('the chat settings are complete and in demo mode', () => {
+test('the chat settings are complete and point at the live backend', () => {
   expect(content.chat.title).toBe('Ask about Samir')
-  expect(content.chat.demo).toBe(true)
+  expect(content.chat.demo).toBe(false)
   expect(content.chat.demoNotice).toMatch(/prepared example answers/)
   expect(content.chat.errorMessage).toMatch(/not available/)
-  expect(content.chat.apiUrl).toBeUndefined()
+  expect(content.chat.wakingMessage).toMatch(/waking up/)
+  expect(content.chat.apiUrl).toMatch(/^https:\/\/[a-z0-9-]+\.onrender\.com$/)
 })
 
 test('the chat has a notice for live mode', () => {

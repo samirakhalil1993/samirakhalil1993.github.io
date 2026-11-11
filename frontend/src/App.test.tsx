@@ -58,10 +58,22 @@ test('the CV file named in the content exists and is a PDF', () => {
   expect(readFileSync(file).subarray(0, 4).toString()).toBe('%PDF')
 })
 
-test('offers the chat while the content is in demo mode', () => {
+test('offers the chat, connected to the AI backend', () => {
   render(<App />)
-  expect(content.chat.demo).toBe(true)
-  expect(screen.getByRole('button', { name: 'Open chat' })).toBeTruthy()
+  expect(content.chat.apiUrl).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Open chat' }))
+  const chat = screen.getByRole('dialog', { name: content.chat.title })
+  expect(chat.textContent).toContain(content.chat.liveNotice)
+  expect(chat.textContent).not.toContain(content.chat.demoNotice)
+})
+
+test('the page has a description for search engines that matches the profile', () => {
+  const html = readFileSync(path.resolve(import.meta.dirname, '../index.html'), 'utf8')
+  const description = html.match(/<meta\s+name="description"\s+content="([^"]+)"/)?.[1] ?? ''
+  const text = description.replaceAll('&amp;', '&')
+  expect(text).toContain(content.profile.name)
+  expect(text).toContain(content.profile.title)
+  expect(text.length).toBeLessThanOrEqual(160)
 })
 
 test('the page shrinks for the on-screen keyboard, so the chat field stays visible on phones', () => {

@@ -160,3 +160,66 @@ allowance: 4 questions a minute and 100 a day for everyone, 20 an hour per
 visitor. And the model is told to think briefly and not to send its
 thinking, with an answer that ran out of room treated as a failure, so a
 visitor never gets an empty bubble.
+
+## 17. Hosting: GitHub Pages for the site, Render for the backend
+
+Chosen with Samir in November 2026, with "free, no card" as the rule. The
+site is static files, so GitHub Pages serves it from the account he already
+has. The backend is a running Python program; Render's free web service
+runs it without a card. Its cost is that an idle service is stopped after
+15 minutes and needs about a minute to start. Koyeb was dropped: after its
+purchase by Mistral, sources disagreed on whether a free service without a
+card still exists.
+
+## 18. Softening the sleeping backend
+
+The page sends one request to `/api/health` when it loads, so a sleeping
+backend starts waking before the visitor opens the chat. If a live answer
+still takes more than 5 seconds to start, the chat says that the assistant
+is waking up. Nothing is retried automatically: the browser's one request
+simply waits until the backend is up.
+
+## 19. One published address, and no way to publish a local one
+
+`content/chat.json` holds the public backend address, and its check accepts
+only a bare `https://` address that is not on the local machine. Local work
+and the browser tests get their address from `frontend/.env.development`
+and `frontend/.env.e2e`, which a published build ignores (the code reads
+them only when the build mode is not "production"). The publishing job
+also searches the built files for a local address and stops if it finds one.
+
+## 20. Visitors on Render are counted by Cloudflare's header
+
+Render puts Cloudflare in front of every service and only appends to
+`X-Forwarded-For`, so the visitor could write invented addresses into it,
+and its last entry is a Cloudflare server, not the visitor. The backend
+therefore has a setting `CLIENT_IP_HEADER`, set to `cf-connecting-ip` on
+Render: Cloudflare fills that header itself. A value that is not an address
+is not believed. (The plan proposed counting entries of `X-Forwarded-For`
+from the right; the header is simpler and does not depend on how many
+proxies Render uses.) This must be confirmed on the live service.
+
+## 21. Tests in a real browser, and publishing only when they pass
+
+Playwright runs the built site against the backend with the stand-in model:
+no key, no cost, always the same answer. One GitHub workflow runs the site's
+checks, the backend's checks and these browser tests on every push; the
+publishing job needs all three and runs only on `main`. Render is set to
+deploy only after the checks pass. Actions are pinned to exact commits and
+the backend's libraries to exact versions.
+
+## 22. The chat window is not loaded separately
+
+Loading the chat window as its own file was measured: it would shrink the
+first download from 81.35 kB to 80.56 kB (compressed). That is not worth
+the extra moving parts, so the idea was dropped.
+
+## 23. Known limits that were left as they are
+
+- The usage counters reset when the free backend restarts (see 17).
+- The browser tests run in Chromium only, in a desktop and a phone-sized
+  window. Firefox and Safari are not tested automatically.
+- Small items noted in earlier reviews and not needed for going live: the
+  CV window's click-outside and scrolling details, the phone menu's missing
+  click-outside, the chat's scroll position while reading older messages,
+  and failed questions counting towards the 15 per conversation.

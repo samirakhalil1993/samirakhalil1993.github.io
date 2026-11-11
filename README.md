@@ -11,12 +11,10 @@ Short notes on the main technical choices are in
 
 ## Current status
 
-Phase 6 (AI backend) is built and tested with a stand-in for the AI model.
-The backend lives in `backend/` and has its own guide,
-[`backend/README.md`](backend/README.md), which includes the steps for the
-first real test with a Groq key. Until the chat is connected (`apiUrl` in
-`content/chat.json`), it stays in demo mode. Phase 7 is testing and
-deployment.
+All seven phases are built. The site is published by GitHub Pages and the AI
+backend runs on Render; both are described under
+[How the site is published](#how-the-site-is-published). The backend has its
+own guide, [`backend/README.md`](backend/README.md).
 
 ## Run the site on your computer
 
@@ -35,6 +33,12 @@ npm run dev      # starts the site and prints a local address to open
 
 Open the address that `npm run dev` prints (normally
 `http://localhost:5173`). The page reloads by itself when you save a file.
+
+On your computer the chat talks to a backend on your computer
+(`http://localhost:8000`, set in `frontend/.env.development`), never to the
+published one. Start that backend as described in `backend/README.md`, or
+the chat shows its "not available" message. The rest of the site works
+without it.
 
 ## Check and build the site
 
@@ -124,34 +128,26 @@ The key is not a secret. It only allows sending a message to your inbox,
 which the form on the public site does anyway, so it is safe to keep in the
 repository. The free plan allows 250 messages a month.
 
-### The chat: demo mode, texts and suggested questions
+### The chat: address, texts and suggested questions
 
-Until the AI backend exists, the chat cannot really answer questions. To
-keep the site honest, it runs in demo mode: it gives prepared answers taken
-from the content files and shows a "Demo" badge. Everything about the chat
-is set in `content/chat.json`:
+Everything about the chat is set in `content/chat.json`:
 
 | Setting | What it does |
 | --- | --- |
-| `demo` | `true` shows the chat with prepared answers and the Demo badge. `false` hides the chat completely (as long as no `apiUrl` is set). |
-| `demoNotice` | The line under the title that explains demo mode. |
+| `apiUrl` | The public address of the AI backend. It must start with `https://` and have nothing after the address. A check stops the build if a local address is put here by mistake. |
+| `liveNotice` | The line under the title: it says the answers come from an AI model and may be wrong. |
+| `wakingMessage` | Shown when an answer takes more than 5 seconds to start. The free backend sleeps when nobody uses it and needs about a minute to wake. |
 | `title`, `welcome`, `placeholder` | The texts of the window. |
 | `suggestedQuestions` | The questions offered before the first message. |
 | `errorMessage`, `limitMessage` | Shown when an answer fails, or when the usage limit is reached. |
-| `apiUrl` | The address of the AI backend. When it is set, the chat sends questions there and shows the AI notice; the Demo badge disappears. Use `http://localhost:8000` while testing on your own computer. |
-| `liveNotice` | The line under the title when the chat is connected to the AI backend. |
+| `demo`, `demoNotice` | Demo mode: prepared answers with a "Demo" badge. It is only used when `apiUrl` is removed. With `"demo": false` and no `apiUrl`, the page has no chat at all. |
 
-In demo mode, a question is answered only if it contains a word the demo
-knows (project, skill, experience, education, contact, or a general word
-such as "who" or "why"). If you change the suggested questions, run
-`npm test`: a check fails when one of them would get no real answer.
+If you ever need to take the AI chat offline, remove the `apiUrl` line and
+keep `"demo": false`. The chat button then disappears from the page.
 
 After changing any content, rebuild the assistant's index (see
 `backend/README.md`), or the assistant keeps answering from the old text.
-
-**Before the site goes public, set `"demo": false` unless the AI backend is
-connected.** A visitor should not meet a chat that can only give prepared
-answers.
+The automatic checks on GitHub refuse a change where this was forgotten.
 
 ### Replace the CV
 
@@ -180,11 +176,68 @@ them in one at a time:
 Images go in `frontend/public/images/`. An `image` must always come with an
 `imageAlt` text that describes it; the checks fail without one.
 
+## How the site is published
+
+Publishing is automatic, so that nothing untested can reach visitors.
+
+1. You push a change to the `main` branch on GitHub.
+2. GitHub runs three groups of checks (file `.github/workflows/ci.yml`): the
+   site's tests and build, the backend's tests, and tests that use the whole
+   site in a real browser.
+3. If every check passes, GitHub publishes the site to GitHub Pages, and
+   Render starts the new backend. If one fails, the published site stays as
+   it was, and GitHub sends you an email.
+
+| Part | Where it runs | Address |
+| --- | --- | --- |
+| The site | GitHub Pages | `https://samirakhalil1993.github.io` |
+| The AI backend | Render, free plan (`render.yaml`) | `https://samir-portfolio-api.onrender.com` |
+
+The Groq key is stored only in Render's dashboard (Environment), never in
+this repository.
+
+### Change content and publish
+
+```bash
+# 1. edit files in content/
+cd frontend && npm test                             # 2. check the content
+cd ../backend && python -m ingest.build_index       # 3. rebuild the assistant's index
+git add -A && git commit -m "Update content" && git push
+```
+
+A few minutes later the change is online. The "Actions" tab of the
+repository shows the progress.
+
+### When the chat does not answer
+
+| What you see | Likely cause | What to do |
+| --- | --- | --- |
+| "The assistant is waking up", then an answer | The backend was asleep. This is normal on the free plan. | Nothing. |
+| The "not available" message on every question | The backend is down, the Groq key is wrong, or the model name no longer exists | Open the service in Render and read "Logs". Check `GROQ_API_KEY` and `GROQ_MODEL` under "Environment". |
+| The limit message | The usage limit of the day or of the hour is reached | It clears by itself. The limits are explained in `backend/README.md`. |
+| The chat works on the site but not on your computer | The local backend is not running | Start it (see `backend/README.md`). |
+
+### Run the browser tests yourself
+
+```bash
+cd e2e
+npm install
+npx playwright install chromium      # first time only: downloads a browser
+E2E_PYTHON=../backend/.venv/bin/python npx playwright test             # macOS / Linux
+```
+
+On Windows PowerShell, set the variable first:
+`$env:E2E_PYTHON = "..\backend\.venv\Scripts\python.exe"`, then run
+`npx playwright test`.
+
 ## Folder overview
 
 ```
 content/     all text and settings, as JSON
 frontend/    the website (React, Vite, TypeScript, Tailwind CSS)
 backend/     the AI assistant's server (Python, FastAPI)
+e2e/         tests that use the whole site in a real browser (Playwright)
+.github/     the automatic checks and the publishing steps
+render.yaml  tells Render how to run the backend
 docs/        design decisions and implementation plans
 ```

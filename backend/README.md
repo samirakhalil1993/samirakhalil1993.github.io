@@ -39,9 +39,12 @@ libraries apart from the rest of your computer.
 ```bash
 cd backend
 python -m venv .venv
-.venv/bin/pip install fastapi uvicorn httpx pypdf pytest      # macOS / Linux
-.venv\Scripts\pip install fastapi uvicorn httpx pypdf pytest  # Windows
+.venv/bin/pip install -r requirements-dev.txt      # macOS / Linux
+.venv\Scripts\pip install -r requirements-dev.txt  # Windows
 ```
+
+`requirements.txt` lists the exact library versions the live server uses;
+`requirements-dev.txt` adds what the tests need.
 
 On Windows, use `.venv\Scripts\python` wherever this file says
 `.venv/bin/python`.
@@ -102,11 +105,9 @@ own Groq key.
    .venv/bin/uvicorn app.main:app --port 8000 --no-access-log
    ```
 
-5. **Point the site at it.** In `content/chat.json`, add
-   `"apiUrl": "http://localhost:8000"`, then start the site with
-   `npm run dev` in `frontend/`. The chat now shows the AI notice in place of
-   the Demo badge. (Do not commit this line; the public address comes in
-   Phase 7.)
+5. **Start the site.** Run `npm run dev` in `frontend/`. On your computer
+   the site already talks to `http://localhost:8000` (this is set in
+   `frontend/.env.development`), so nothing needs to be edited.
 6. **Ask these questions and compare.**
 
    | Ask | A good answer |
@@ -143,6 +144,8 @@ All settings are environment variables (or lines in `.env`).
 | `REQUESTS_PER_HOUR` | 20 | Questions per visitor per hour |
 | `REQUESTS_PER_DAY` | 100 | Questions per day, all visitors together |
 | `TRUST_PROXY` | false | Set to true only when the host puts the visitor's address in `X-Forwarded-For` |
+| `CLIENT_IP_HEADER` | none | A header in which the host itself names the visitor's address. On Render: `cf-connecting-ip`. When set, it is used instead of `X-Forwarded-For`. |
+| `FAKE_PIECE_DELAY_MS` | 0 | Only with `PROVIDER=fake`: a pause before each piece of the stand-in answer |
 
 The limits are sized for Groq's free plan, which allows about 8,000 tokens a
 minute and 200,000 a day; one question uses roughly 1,500 to 2,300. When the
@@ -152,6 +155,39 @@ hour or the whole day is used up, it shows its limit message.
 Run the backend as a single process (the command above does). The counters
 live in memory, so several worker processes would each count on their own,
 and a restart sets them back to zero.
+
+## The live server (Render)
+
+The file `render.yaml` in the repository root describes the service: free
+plan, region Frankfurt, started from this folder with the libraries in
+`requirements.txt`. Render deploys a new version by itself after the checks
+on GitHub have passed.
+
+**First start.** In Render choose New > Blueprint and pick the repository.
+Render reads `render.yaml` and asks once for `GROQ_API_KEY`. Paste the key
+there. It is stored by Render and appears nowhere else.
+
+**Things to know about the free plan:**
+
+- The service is stopped after 15 minutes without a request and started by
+  the next one, which takes about a minute. The site sends a small request
+  when a page loads, so the backend is usually awake before the visitor
+  opens the chat.
+- The counters for the usage limits live in memory. Every restart, also the
+  one after a sleep, sets them back to zero. The limit per day is therefore
+  a limit per waking period. Groq's own limits still hold whatever happens
+  here, and when Groq refuses, the chat shows the limit message.
+- The site's address must be listed in `ALLOWED_ORIGINS`. If the site moves
+  to another address (for example your own domain), change it in
+  `render.yaml` and under "Environment" in Render, or browsers will block
+  the chat.
+
+**Who counts as one visitor.** Render puts Cloudflare in front of every
+service. Cloudflare writes the visitor's address into the header
+`CF-Connecting-IP`, replacing anything the visitor sent under that name.
+`X-Forwarded-For` is only added to on Render, so a visitor could invent
+addresses in it. That is why `render.yaml` sets
+`CLIENT_IP_HEADER=cf-connecting-ip`.
 
 ## What is logged
 
