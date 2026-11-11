@@ -75,8 +75,12 @@ def _visitor(request: Request, settings: Settings) -> str:
     """
     connection = request.client.host if request.client else "unknown"
     if settings.client_ip_header:
-        named = request.headers.get(settings.client_ip_header, "").strip()
-        return _one_visitor(named) or _one_visitor(connection) or connection
+        named = _one_visitor(request.headers.get(settings.client_ip_header, "").strip())
+        if named is None and not getattr(request.app.state, "warned_no_visitor_header", False):
+            # Said once: without the header every visitor shares one hourly limit.
+            request.app.state.warned_no_visitor_header = True
+            log.warning("the header %s is missing or not an address; visitors cannot be told apart", settings.client_ip_header)
+        return named or _one_visitor(connection) or connection
     if settings.trust_proxy:
         forwarded = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
         if forwarded:

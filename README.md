@@ -2,19 +2,17 @@
 
 A single-page portfolio website with an AI assistant. This repository holds
 the website (`frontend/`), all of its text and settings (`content/`), and the
-project documents (`docs/`). The AI backend is added in a later phase.
+project documents (`docs/`). The AI backend is in `backend/`.
 
-The full design is described in the
-[design document](https://claude.ai/artifact/9w7t6wEDyTCQwsnaz3Aow3).
 Short notes on the main technical choices are in
 [`docs/decisions.md`](docs/decisions.md).
 
 ## Current status
 
-All seven phases are built. The site is published by GitHub Pages and the AI
-backend runs on Render; both are described under
-[How the site is published](#how-the-site-is-published). The backend has its
-own guide, [`backend/README.md`](backend/README.md).
+All seven phases are built and tested. Going live needs three one-time steps
+that only the owner can do; they are listed under
+[First-time setup](#first-time-setup). The backend has its own guide,
+[`backend/README.md`](backend/README.md).
 
 ## Run the site on your computer
 
@@ -196,12 +194,33 @@ Publishing is automatic, so that nothing untested can reach visitors.
 The Groq key is stored only in Render's dashboard (Environment), never in
 this repository.
 
+### First-time setup
+
+Do these in this order. The order matters: the backend is only deployed
+after all checks on GitHub have passed, and publishing the site is one of
+those checks.
+
+1. **GitHub Pages.** In the repository: Settings > Pages > Source, choose
+   "GitHub Actions". Without this, GitHub would publish this README as the
+   site, and the publishing step would fail.
+2. **Push to `main`.** The checks run and the site is published.
+3. **Render.** Sign in at render.com with GitHub, choose New > Blueprint and
+   pick this repository. Paste the Groq key when Render asks for
+   `GROQ_API_KEY`. Then open `https://samir-portfolio-api.onrender.com/api/health`;
+   it should show `{"status":"ok"}`.
+4. **Optional: names the site must not mention.** Add a repository secret
+   called `BANNED_NAMES` (Settings > Secrets and variables > Actions) with
+   the names, separated by commas. The checks then refuse any content that
+   contains one. On your computer the same list is read from the file
+   `.banned-names` in the project folder, which git ignores.
+
 ### Change content and publish
 
 ```bash
 # 1. edit files in content/
 cd frontend && npm test                             # 2. check the content
-cd ../backend && python -m ingest.build_index       # 3. rebuild the assistant's index
+cd ../backend && .venv/bin/python -m ingest.build_index   # 3. rebuild the assistant's index
+#    (Windows: .venv\Scripts\python -m ingest.build_index)
 git add -A && git commit -m "Update content" && git push
 ```
 
@@ -223,6 +242,7 @@ repository shows the progress.
 cd e2e
 npm install
 npx playwright install chromium      # first time only: downloads a browser
+                                     # (on Linux add --with-deps)
 E2E_PYTHON=../backend/.venv/bin/python npx playwright test             # macOS / Linux
 ```
 
@@ -239,5 +259,5 @@ backend/     the AI assistant's server (Python, FastAPI)
 e2e/         tests that use the whole site in a real browser (Playwright)
 .github/     the automatic checks and the publishing steps
 render.yaml  tells Render how to run the backend
-docs/        design decisions and implementation plans
+docs/        design decisions
 ```

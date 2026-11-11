@@ -74,6 +74,8 @@ test('a question longer than 500 characters cannot be sent', async ({ page }) =>
   await expect(input).toHaveAttribute('aria-invalid', 'true')
   await send.click({ force: true })
   await input.press('Enter')
+  // A request would leave a moment after the key press, so give it time to show up.
+  await page.waitForTimeout(500)
   expect(sent).toBe(0)
 
   await input.fill('a'.repeat(500))
@@ -117,7 +119,7 @@ test('when the backend cannot be reached, the error message offers Try again, an
 
 test('a slow backend shows the waking notice until the answer starts', async ({ page }) => {
   await page.route(CHAT_URL, async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 6500))
+    await new Promise((resolve) => setTimeout(resolve, 9000))
     await route.continue()
   })
   await page.goto('/')
@@ -125,7 +127,7 @@ test('a slow backend shows the waking notice until the answer starts', async ({ 
   await chat.getByLabel('Your question').fill('Hello')
   await chat.getByLabel('Your question').press('Enter')
 
-  await expect(chat.getByRole('status')).toHaveText(/waking up/, { timeout: 6000 })
+  await expect(chat.getByRole('status')).toHaveText(/waking up/, { timeout: 8500 })
   await expect(chat.getByRole('log').getByText(FAKE_ANSWER)).toBeVisible()
   await expect(chat.getByRole('status')).toHaveText('')
 })

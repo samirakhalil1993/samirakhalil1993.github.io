@@ -9,8 +9,8 @@ files, the public CV, and the README of each listed GitHub repository. The
 result is written to `backend/data/index.json`, which the backend loads.
 """
 
-import hashlib
 import json
+import os
 import re
 import sys
 from collections.abc import Mapping
@@ -26,40 +26,35 @@ INDEX_PATH = REPO_ROOT / "backend" / "data" / "index.json"
 MAX_PIECE_CHARS = 1200
 
 # The same rules as the frontend's content checks: names that must not be
-# mentioned, and anything that looks like a phone number. A banned name is
-# stored only as (number of letters, SHA-256 of the lower-case name), never as
-# readable text, because this repository is public.
-BANNED_NAMES: list[tuple[int, str]] = [
-    (6, "0000000000000000000000000000000000000000000000000000000000000000"),
-]
+# mentioned, and anything that looks like a phone number. The repository is
+# public, so the names are not stored in it. They are read from the
+# environment variable BANNED_NAMES (comma-separated) or from the file
+# .banned-names in the repository root (one per line), which git ignores.
 BANNED_NAME_FOUND = "a name that must not be mentioned"
-_WORD = re.compile(r"[^\W_]+")
+_NAMES_FILE = Path(__file__).resolve().parents[2] / ".banned-names"
 _PHONE = re.compile(r"\+?\d(?:[\s().-]{0,2}\d){8,}")
 _UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.IGNORECASE)
 
 
-def banned_name(name: str) -> tuple[int, str]:
-    """Makes the entry for a name. Run it once by hand; do not commit the name itself."""
-    lower = name.lower()
-    return len(lower), hashlib.sha256(lower.encode()).hexdigest()
+def parse_banned_names(raw: str) -> list[str]:
+    """Splits a list of names written with commas or line breaks."""
+    names = (name.strip().lower() for name in re.split(r"[,\n]", raw))
+    return [name for name in names if name and not name.startswith("#")]
 
 
-def _has_banned_name(text: str, names: list[tuple[int, str]]) -> bool:
-    """True when a banned name occurs anywhere in the text, also inside a longer word."""
-    for word in _WORD.findall(text.lower()):
-        for length, digest in names:
-            for start in range(len(word) - length + 1):
-                piece = word[start : start + length]
-                if hashlib.sha256(piece.encode()).hexdigest() == digest:
-                    return True
-    return False
+def load_banned_names() -> list[str]:
+    """The names the site must not mention, from the environment and the local file."""
+    from_file = _NAMES_FILE.read_text(encoding="utf-8") if _NAMES_FILE.is_file() else ""
+    return sorted({*parse_banned_names(os.environ.get("BANNED_NAMES", "")), *parse_banned_names(from_file)})
 
 
-def find_banned_text(text: str, names: list[tuple[int, str]] | None = None) -> list[str]:
+def find_banned_text(text: str, names: list[str] | None = None) -> list[str]:
     """Returns every banned piece of text found, or an empty list. A banned name is never repeated."""
     cleaned = _UUID.sub("", text)
+    lower = cleaned.lower()
     found = []
-    if _has_banned_name(cleaned, BANNED_NAMES if names is None else names):
+    # Found anywhere, also inside a longer word.
+    if any(name.lower() in lower for name in (load_banned_names() if names is None else names)):
         found.append(BANNED_NAME_FOUND)
     if match := _PHONE.search(cleaned):
         found.append(match.group(0))

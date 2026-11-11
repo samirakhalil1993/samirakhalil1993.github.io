@@ -223,3 +223,20 @@ the extra moving parts, so the idea was dropped.
   CV window's click-outside and scrolling details, the phone menu's missing
   click-outside, the chat's scroll position while reading older messages,
   and failed questions counting towards the 15 per conversation.
+
+## 24. Names that must not be mentioned are not stored in the repository
+
+The repository is public, so a banned name cannot be written in it, not even
+as a hash: a short name can be found from its hash in minutes. The checks
+read the names from a repository secret (`BANNED_NAMES`) on GitHub and from
+the git-ignored file `.banned-names` on the owner's computer. Without
+either, that one check is skipped and the phone-number check still runs.
+The history was rewritten before the first push so that no earlier commit
+holds such a name, and the internal planning documents were left out.
+
+## 25. A failed site publication also holds back the backend
+
+Render deploys only when every check on a commit has passed, and publishing
+the site is one of them. This keeps site and backend in step. The price: if
+GitHub Pages is not set up correctly, the backend is not deployed either.
+The first-time setup in the README is ordered to avoid this.

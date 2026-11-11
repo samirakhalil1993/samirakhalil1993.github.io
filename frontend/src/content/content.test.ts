@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { BANNED_NAME_FOUND, BANNED_NAMES, bannedName, findBannedText } from '../test/banned'
+import { BANNED_NAME_FOUND, findBannedText, parseBannedNames } from '../test/banned'
 import { content } from './index'
 import { rawContent } from './raw'
 import { validateContent } from './schema'
@@ -215,9 +215,9 @@ test.each([
   expect(findBannedText(text)).not.toEqual([])
 })
 
-// The real name is stored only as a fingerprint, so these tests use an
+// The real names are not stored in the repository, so these tests use an
 // invented one to prove that the mechanism works.
-const example = [bannedName('Zorvex')]
+const example = ['Zorvex']
 
 test.each([
   ['as a word', '"notes": "Worked at Zorvex AB"'],
@@ -232,12 +232,9 @@ test('findBannedText does not flag other words', () => {
   expect(findBannedText('Worked at Zorve and at Orvex on vortex research', example)).toEqual([])
 })
 
-test('the list of banned names holds fingerprints, not readable names', () => {
-  expect(BANNED_NAMES.length).toBeGreaterThan(0)
-  for (const name of BANNED_NAMES) {
-    expect(name.sha256).toMatch(/^[0-9a-f]{64}$/)
-    expect(name.length).toBeGreaterThan(2)
-  }
+test('banned names can be listed with commas or one per line', () => {
+  expect(parseBannedNames('Zorvex, Other Co\n# a comment\n\n second ')).toEqual(['zorvex', 'other co', 'second'])
+  expect(parseBannedNames('')).toEqual([])
 })
 
 test('findBannedText accepts ordinary numbers and dates', () => {

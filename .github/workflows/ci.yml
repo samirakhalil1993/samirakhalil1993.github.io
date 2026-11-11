@@ -11,6 +11,11 @@ on:
 permissions:
   contents: read
 
+# Optional: names the site must not mention, stored as a repository secret
+# (Settings > Secrets and variables > Actions). Without it, that one check is skipped.
+env:
+  BANNED_NAMES: ${{ secrets.BANNED_NAMES }}
+
 # Actions are pinned to an exact commit, so a changed tag cannot swap in other code.
 jobs:
   frontend:

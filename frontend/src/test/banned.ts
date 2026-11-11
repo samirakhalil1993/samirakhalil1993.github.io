@@ -1,25 +1,31 @@
 /*
  * Text that must never appear in the content files. Used by the tests only.
- * The content folder is public (website, repository, AI assistant), so the
- * rules give nothing away themselves: no real phone number is written down
- * here, and a name that must not be mentioned is stored only as a
- * fingerprint (a SHA-256 hash), never as readable text.
+ *
+ * The repository is public, so the rules give nothing away themselves: no
+ * real phone number is written here, and names that must not be mentioned
+ * are not stored in the repository at all. They are read from
+ *   - the environment variable BANNED_NAMES (comma-separated), or
+ *   - the file .banned-names in the repository root (one name per line),
+ * which git ignores. Without either, only the phone-number rule runs.
  */
-import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 
-/** A name that must not appear: how many letters it has, and its fingerprint in lower case. */
-export type BannedName = { length: number; sha256: string }
+const namesFile = path.resolve(import.meta.dirname, '../../../.banned-names')
 
-/** Makes the entry for a name. Run it once by hand; do not commit the name itself. */
-export function bannedName(name: string): BannedName {
-  const lower = name.toLowerCase()
-  return { length: lower.length, sha256: createHash('sha256').update(lower).digest('hex') }
+/** Splits a list of names written with commas or line breaks. */
+export function parseBannedNames(raw: string): string[] {
+  return raw
+    .split(/[,\n]/)
+    .map((name) => name.trim().toLowerCase())
+    .filter((name) => name !== '' && !name.startsWith('#'))
 }
 
-/** The names this site must not mention. */
-export const BANNED_NAMES: BannedName[] = [
-  { length: 6, sha256: '0000000000000000000000000000000000000000000000000000000000000000' },
-]
+/** The names this site must not mention, from the environment and the local file. */
+export function loadBannedNames(env: string | undefined = process.env.BANNED_NAMES): string[] {
+  const fromFile = existsSync(namesFile) ? readFileSync(namesFile, 'utf8') : ''
+  return [...new Set([...parseBannedNames(env ?? ''), ...parseBannedNames(fromFile)])]
+}
 
 /** What is reported when a banned name is found. The name itself is never printed. */
 export const BANNED_NAME_FOUND = 'a name that must not be mentioned'
@@ -34,29 +40,13 @@ const phoneNumber = /\+?\d(?:[\s().-]{0,2}\d){8,}/
 /** The shape of a form access key. Its digit groups can look like a phone number. */
 const uuid = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi
 
-/** True when a banned name occurs anywhere in the text, also inside a longer word. */
-function hasBannedName(text: string, names: BannedName[]): boolean {
-  const wanted = new Map<number, Set<string>>()
-  for (const name of names) {
-    wanted.set(name.length, (wanted.get(name.length) ?? new Set()).add(name.sha256))
-  }
-  // Runs of letters and digits; every stretch of the right length is compared.
-  for (const word of text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []) {
-    for (const [length, hashes] of wanted) {
-      for (let start = 0; start + length <= word.length; start += 1) {
-        const piece = word.slice(start, start + length)
-        if (hashes.has(createHash('sha256').update(piece).digest('hex'))) return true
-      }
-    }
-  }
-  return false
-}
-
 /** Returns every banned piece of text found, or an empty list. */
-export function findBannedText(rawText: string, names: BannedName[] = BANNED_NAMES): string[] {
+export function findBannedText(rawText: string, names: string[] = loadBannedNames()): string[] {
   const text = rawText.replace(uuid, '')
+  const lower = text.toLowerCase()
   const found: string[] = []
-  if (hasBannedName(text, names)) found.push(BANNED_NAME_FOUND)
+  // Found anywhere, also inside a longer word.
+  if (names.some((name) => lower.includes(name.toLowerCase()))) found.push(BANNED_NAME_FOUND)
   const phone = text.match(phoneNumber)
   if (phone) found.push(phone[0])
   return found

@@ -404,3 +404,14 @@ def test_every_kind_of_response_tells_the_browser_not_to_guess_its_type():
     assert [a.status_code for a in answers] == [200, 200, 429, 422, 404]
     for response in answers:
         assert response.headers["x-content-type-options"] == "nosniff"
+
+
+def test_a_missing_hosts_header_is_reported_once(caplog):
+    client, _, _ = make(CLIENT_IP_HEADER="cf-connecting-ip")
+    with caplog.at_level(logging.WARNING, logger="portfolio.chat"):
+        ask(client)
+        ask(client)
+        ask(client, headers={"cf-connecting-ip": "1.1.1.1"})
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert len(warnings) == 1
+    assert "cf-connecting-ip" in warnings[0].getMessage()

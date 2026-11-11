@@ -88,13 +88,11 @@ def test_a_readme_is_split_on_headings_and_linked_to_its_repo(content_dir):
     assert "Install it." in chunks[1].text
 
 
-# The real banned name is stored only as a fingerprint, so the tests teach
+# The real banned names are not stored in the repository, so the tests teach
 # the check an invented name.
 @pytest.fixture
 def zorvex_is_banned(monkeypatch):
-    import ingest.build_index as build_index
-
-    monkeypatch.setattr(build_index, "BANNED_NAMES", [build_index.banned_name("Zorvex")])
+    monkeypatch.setenv("BANNED_NAMES", "Zorvex")
 
 
 @pytest.mark.parametrize("bad", ["Worked at Zorvex AB.", "The ZORVEXagent tool.", "Call +46 70 123 45 67."])
@@ -138,10 +136,8 @@ def test_a_banned_name_is_reported_without_repeating_it(zorvex_is_banned):
     assert find_banned_text("Worked at Zorve and Orvex on vortex research.") == []
 
 
-def test_the_banned_names_are_fingerprints_not_readable_names():
-    from ingest.build_index import BANNED_NAMES
+def test_banned_names_can_be_listed_with_commas_or_one_per_line():
+    from ingest.build_index import parse_banned_names
 
-    assert BANNED_NAMES
-    for length, digest in BANNED_NAMES:
-        assert length > 2
-        assert len(digest) == 64 and set(digest) <= set("0123456789abcdef")
+    assert parse_banned_names("Zorvex, Other Co\n# a comment\n\n second ") == ["zorvex", "other co", "second"]
+    assert parse_banned_names("") == []
