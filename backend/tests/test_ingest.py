@@ -88,8 +88,17 @@ def test_a_readme_is_split_on_headings_and_linked_to_its_repo(content_dir):
     assert "Install it." in chunks[1].text
 
 
-@pytest.mark.parametrize("bad", ["Worked at ExampleCo AB.", "Call +46 70 123 45 67."])
-def test_banned_text_in_a_readme_or_cv_stops_the_build(content_dir, bad):
+# The real banned name is stored only as a fingerprint, so the tests teach
+# the check an invented name.
+@pytest.fixture
+def zorvex_is_banned(monkeypatch):
+    import ingest.build_index as build_index
+
+    monkeypatch.setattr(build_index, "BANNED_NAMES", [build_index.banned_name("Zorvex")])
+
+
+@pytest.mark.parametrize("bad", ["Worked at Zorvex AB.", "The ZORVEXagent tool.", "Call +46 70 123 45 67."])
+def test_banned_text_in_a_readme_or_cv_stops_the_build(content_dir, bad, zorvex_is_banned):
     with pytest.raises(ValueError, match="GitHub: test/alpha"):
         build_chunks(content_dir, readmes={"https://github.com/test/alpha": f"# Alpha\n{bad}"})
     with pytest.raises(ValueError, match="CV"):
@@ -120,3 +129,19 @@ def test_the_real_index_has_no_banned_text_and_covers_the_site():
     assert {"profile", "project-sre-agent", "experience-trafikverket", "education-1"} <= ids
     # The contact file is not in the real knowledge sources, so the email is not indexed.
     assert "contact" not in ids
+
+
+def test_a_banned_name_is_reported_without_repeating_it(zorvex_is_banned):
+    from ingest.build_index import BANNED_NAME_FOUND, find_banned_text
+
+    assert find_banned_text("Worked at Zorvex AB.") == [BANNED_NAME_FOUND]
+    assert find_banned_text("Worked at Zorve and Orvex on vortex research.") == []
+
+
+def test_the_banned_names_are_fingerprints_not_readable_names():
+    from ingest.build_index import BANNED_NAMES
+
+    assert BANNED_NAMES
+    for length, digest in BANNED_NAMES:
+        assert length > 2
+        assert len(digest) == 64 and set(digest) <= set("0123456789abcdef")

@@ -9,6 +9,7 @@ files, the public CV, and the README of each listed GitHub repository. The
 result is written to `backend/data/index.json`, which the backend loads.
 """
 
+import hashlib
 import json
 import re
 import sys
@@ -24,17 +25,45 @@ INDEX_PATH = REPO_ROOT / "backend" / "data" / "index.json"
 # CV and README text is cut into pieces of at most this many characters.
 MAX_PIECE_CHARS = 1200
 
-# The same rules as the frontend's content checks: a company that must not be
-# mentioned, and anything that looks like a phone number.
-_BANNED_WORD = re.compile(r"ExampleCo", re.IGNORECASE)
+# The same rules as the frontend's content checks: names that must not be
+# mentioned, and anything that looks like a phone number. A banned name is
+# stored only as (number of letters, SHA-256 of the lower-case name), never as
+# readable text, because this repository is public.
+BANNED_NAMES: list[tuple[int, str]] = [
+    (6, "0000000000000000000000000000000000000000000000000000000000000000"),
+]
+BANNED_NAME_FOUND = "a name that must not be mentioned"
+_WORD = re.compile(r"[^\W_]+")
 _PHONE = re.compile(r"\+?\d(?:[\s().-]{0,2}\d){8,}")
 _UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.IGNORECASE)
 
 
-def find_banned_text(text: str) -> list[str]:
-    """Returns every banned piece of text found, or an empty list."""
+def banned_name(name: str) -> tuple[int, str]:
+    """Makes the entry for a name. Run it once by hand; do not commit the name itself."""
+    lower = name.lower()
+    return len(lower), hashlib.sha256(lower.encode()).hexdigest()
+
+
+def _has_banned_name(text: str, names: list[tuple[int, str]]) -> bool:
+    """True when a banned name occurs anywhere in the text, also inside a longer word."""
+    for word in _WORD.findall(text.lower()):
+        for length, digest in names:
+            for start in range(len(word) - length + 1):
+                piece = word[start : start + length]
+                if hashlib.sha256(piece.encode()).hexdigest() == digest:
+                    return True
+    return False
+
+
+def find_banned_text(text: str, names: list[tuple[int, str]] | None = None) -> list[str]:
+    """Returns every banned piece of text found, or an empty list. A banned name is never repeated."""
     cleaned = _UUID.sub("", text)
-    return [match.group(0) for pattern in (_BANNED_WORD, _PHONE) if (match := pattern.search(cleaned))]
+    found = []
+    if _has_banned_name(cleaned, BANNED_NAMES if names is None else names):
+        found.append(BANNED_NAME_FOUND)
+    if match := _PHONE.search(cleaned):
+        found.append(match.group(0))
+    return found
 
 
 def _slug(text: str) -> str:

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { expect, test } from 'vitest'
-import { findBannedText } from './banned'
+import { BANNED_NAME_FOUND, BANNED_NAMES, bannedName, findBannedText } from '../test/banned'
 import { content } from './index'
 import { rawContent } from './raw'
 import { validateContent } from './schema'
@@ -207,13 +207,37 @@ test.each([
 })
 
 test.each([
-  ['the banned company name', '"notes": "Worked at ExampleCo AB"'],
   ['an international phone number', '"phone": "+46 70 123 45 67"'],
   ['a phone number with a 00 prefix', 'call 0046 70 123 45 67'],
   ['a phone number with brackets', '(070) 123 45 67'],
   ['a phone number with a dash', '070-1234567'],
 ])('findBannedText catches %s', (_name, text) => {
   expect(findBannedText(text)).not.toEqual([])
+})
+
+// The real name is stored only as a fingerprint, so these tests use an
+// invented one to prove that the mechanism works.
+const example = [bannedName('Zorvex')]
+
+test.each([
+  ['as a word', '"notes": "Worked at Zorvex AB"'],
+  ['in another case', 'worked at ZORVEX'],
+  ['inside a longer word', 'the ZorvexAgent project'],
+  ['next to punctuation', 'github.com/zorvex-ab/tool'],
+])('findBannedText catches a banned name %s, without repeating it', (_name, text) => {
+  expect(findBannedText(text, example)).toEqual([BANNED_NAME_FOUND])
+})
+
+test('findBannedText does not flag other words', () => {
+  expect(findBannedText('Worked at Zorve and at Orvex on vortex research', example)).toEqual([])
+})
+
+test('the list of banned names holds fingerprints, not readable names', () => {
+  expect(BANNED_NAMES.length).toBeGreaterThan(0)
+  for (const name of BANNED_NAMES) {
+    expect(name.sha256).toMatch(/^[0-9a-f]{64}$/)
+    expect(name.length).toBeGreaterThan(2)
+  }
 })
 
 test('findBannedText accepts ordinary numbers and dates', () => {
