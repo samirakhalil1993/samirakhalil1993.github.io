@@ -49,6 +49,32 @@ def _subject_name(chunks: list[Chunk]) -> str:
     return "the site owner"
 
 
+class _NoTypeGuessing:
+    """Adds `X-Content-Type-Options: nosniff` to every answer.
+
+    Every answer says what it is (JSON or an event stream). This header tells
+    browsers to believe that and never to guess another type. It only touches
+    the first message of a response, so a streamed answer still flows piece
+    by piece and a visitor who leaves is still noticed.
+    """
+
+    def __init__(self, app) -> None:
+        self.app = app
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_header(message) -> None:
+            if message["type"] == "http.response.start":
+                headers = [h for h in message.get("headers", []) if h[0].lower() != b"x-content-type-options"]
+                message = {**message, "headers": [*headers, (b"x-content-type-options", b"nosniff")]}
+            await send(message)
+
+        await self.app(scope, receive, send_with_header)
+
+
 def create_app(
     settings: Settings,
     provider: ChatProvider | None = None,
@@ -79,6 +105,10 @@ def create_app(
         allow_headers=["content-type"],
     )
     app.include_router(router)
+
+    # Added last, so it wraps everything, including answers the CORS layer
+    # gives on its own.
+    app.add_middleware(_NoTypeGuessing)
     return app
 
 

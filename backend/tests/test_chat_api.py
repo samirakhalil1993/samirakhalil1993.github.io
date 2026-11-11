@@ -348,3 +348,59 @@ def test_a_cancelled_answer_is_logged(caplog):
         except BaseException:
             pass
     assert "status=cancelled" in "\n".join(r.getMessage() for r in caplog.records)
+
+
+# --- Behind a host that names the visitor in a header of its own ---------
+# Render puts Cloudflare in front of every service. Cloudflare writes the
+# visitor's address into CF-Connecting-IP and replaces anything the visitor
+# sent under that name, while X-Forwarded-For is only appended to.
+
+
+def test_visitors_are_told_apart_by_the_hosts_own_header():
+    client, _, _ = make(REQUESTS_PER_HOUR="1", CLIENT_IP_HEADER="CF-Connecting-IP")
+    assert ask(client, headers={"cf-connecting-ip": "1.1.1.1"}).status_code == 200
+    assert ask(client, headers={"cf-connecting-ip": "2.2.2.2"}).status_code == 200
+    assert ask(client, headers={"cf-connecting-ip": "1.1.1.1"}).status_code == 429
+
+
+def test_with_the_hosts_header_an_invented_forwarded_address_changes_nothing():
+    client, _, _ = make(REQUESTS_PER_HOUR="1", CLIENT_IP_HEADER="cf-connecting-ip", TRUST_PROXY="true")
+    headers = {"cf-connecting-ip": "1.1.1.1"}
+    assert ask(client, headers={**headers, "x-forwarded-for": "9.9.9.1"}).status_code == 200
+    assert ask(client, headers={**headers, "x-forwarded-for": "9.9.9.2"}).status_code == 429
+    assert ask(client, headers={**headers, "x-forwarded-for": "9.9.9.3, 8.8.8.8"}).status_code == 429
+
+
+def test_without_the_hosts_header_everyone_is_one_visitor():
+    # The header is missing only if the request did not come through the host's
+    # proxy. Then nothing the request says about its origin is believed.
+    client, _, _ = make(REQUESTS_PER_HOUR="1", CLIENT_IP_HEADER="cf-connecting-ip")
+    assert ask(client, headers={"x-forwarded-for": "1.1.1.1"}).status_code == 200
+    assert ask(client, headers={"x-forwarded-for": "2.2.2.2"}).status_code == 429
+
+
+def test_a_hosts_header_that_is_not_an_address_is_not_believed():
+    client, _, _ = make(REQUESTS_PER_HOUR="1", CLIENT_IP_HEADER="cf-connecting-ip")
+    assert ask(client, headers={"cf-connecting-ip": "visitor-a"}).status_code == 200
+    assert ask(client, headers={"cf-connecting-ip": "visitor-b"}).status_code == 429
+    assert ask(client, headers={"cf-connecting-ip": "x" * 5000}).status_code == 429
+
+
+def test_the_hosts_header_also_groups_ipv6_networks():
+    client, _, _ = make(REQUESTS_PER_HOUR="1", CLIENT_IP_HEADER="cf-connecting-ip")
+    assert ask(client, headers={"cf-connecting-ip": "2001:db8:1:2:aaaa::1"}).status_code == 200
+    assert ask(client, headers={"cf-connecting-ip": "2001:db8:1:2:bbbb::2"}).status_code == 429
+
+
+def test_every_kind_of_response_tells_the_browser_not_to_guess_its_type():
+    client, _, _ = make(REQUESTS_PER_HOUR="1")
+    answers = [
+        client.get("/api/health"),
+        ask(client),  # a stream
+        ask(client),  # refused: limit
+        client.post("/api/chat", json={}),  # refused: invalid
+        client.get("/api/nothing-here"),
+    ]
+    assert [a.status_code for a in answers] == [200, 200, 429, 422, 404]
+    for response in answers:
+        assert response.headers["x-content-type-options"] == "nosniff"

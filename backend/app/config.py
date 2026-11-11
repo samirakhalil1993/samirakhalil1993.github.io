@@ -1,5 +1,6 @@
 """Settings of the backend, read once from environment variables."""
 
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
@@ -53,6 +54,10 @@ class Settings:
 
     # Turn on only behind a proxy that sets X-Forwarded-For itself.
     trust_proxy: bool = False
+    # A header in which the host itself names the visitor's address, replacing
+    # anything the visitor sent under that name. On Render: cf-connecting-ip.
+    # When set, it is used instead of X-Forwarded-For.
+    client_ip_header: str | None = None
 
     @classmethod
     def from_env(cls, env: Mapping[str, str]) -> "Settings":
@@ -69,7 +74,12 @@ class Settings:
         if effort not in ("low", "medium", "high", "none"):
             raise ValueError(f"GROQ_REASONING_EFFORT must be low, medium, high or none, got {effort!r}")
 
+        header = env.get("CLIENT_IP_HEADER", "").strip().lower() or None
+        if header is not None and not re.fullmatch(r"[a-z0-9-]+", header):
+            raise ValueError(f"CLIENT_IP_HEADER must be a header name such as cf-connecting-ip, got {header!r}")
+
         return cls(
+            client_ip_header=header,
             groq_reasoning_effort=None if effort == "none" else effort,
             requests_per_minute=_number(env, "REQUESTS_PER_MINUTE", cls.requests_per_minute),
             groq_api_key=(env.get("GROQ_API_KEY") or "").strip() or None,

@@ -32,3 +32,22 @@ def test_another_site_may_not():
         headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST"},
     )
     assert "access-control-allow-origin" not in response.headers
+
+
+def test_with_a_site_configured_a_page_on_this_computer_may_not_call_the_api():
+    # On the live server only the real site is listed. The localhost
+    # addresses are defaults for local work and must not be added to it.
+    api = client(ALLOWED_ORIGINS="https://site.example")
+    for origin in ("http://localhost:5173", "http://localhost:4173"):
+        response = api.options(
+            "/api/chat",
+            headers={"Origin": origin, "Access-Control-Request-Method": "POST"},
+        )
+        assert "access-control-allow-origin" not in response.headers
+
+
+def test_an_allowed_site_can_read_the_health_answer():
+    response = client(ALLOWED_ORIGINS="https://site.example").get(
+        "/api/health", headers={"Origin": "https://site.example"}
+    )
+    assert response.headers["access-control-allow-origin"] == "https://site.example"

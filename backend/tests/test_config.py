@@ -73,3 +73,15 @@ def test_reasoning_effort_can_be_switched_off_for_models_without_it():
     assert Settings.from_env({"GROQ_REASONING_EFFORT": "high"}).groq_reasoning_effort == "high"
     with pytest.raises(ValueError, match="GROQ_REASONING_EFFORT"):
         Settings.from_env({"GROQ_REASONING_EFFORT": "maximum"})
+
+
+def test_the_hosts_visitor_header_is_off_unless_named():
+    assert Settings.from_env({}).client_ip_header is None
+    assert Settings.from_env({"CLIENT_IP_HEADER": "  "}).client_ip_header is None
+    assert Settings.from_env({"CLIENT_IP_HEADER": " CF-Connecting-IP "}).client_ip_header == "cf-connecting-ip"
+
+
+@pytest.mark.parametrize("name", ["cf connecting ip", "x-forwarded-for: 1", "a,b", "é"])
+def test_a_visitor_header_that_is_not_a_header_name_is_rejected(name):
+    with pytest.raises(ValueError, match="CLIENT_IP_HEADER"):
+        Settings.from_env({"CLIENT_IP_HEADER": name})

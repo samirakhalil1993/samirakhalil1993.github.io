@@ -1,0 +1,29 @@
+# Tells Render (the host of the AI backend) how to run it.
+# In Render: New > Blueprint > choose this repository. Render reads this file,
+# asks once for the Groq key, and starts the service. See backend/README.md.
+services:
+  - type: web
+    name: samir-portfolio-api
+    runtime: python
+    plan: free
+    # Closest region to Sweden. It cannot be changed after the service exists.
+    region: frankfurt
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --no-access-log
+    healthCheckPath: /api/health
+    # A new version goes live only after the tests on GitHub have passed.
+    autoDeployTrigger: checksPass
+    envVars:
+      # The secret. `sync: false` means: not stored here; Render asks for it.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.13.18
+      # The only website whose pages may call this backend.
+      - key: ALLOWED_ORIGINS
+        value: https://samirakhalil1993.github.io
+      # Render names the visitor's address in this header (set by Cloudflare,
+      # which is in front of every Render service). Used for the per-visitor limit.
+      - key: CLIENT_IP_HEADER
+        value: cf-connecting-ip

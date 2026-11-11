@@ -1,0 +1,7 @@
+# Exact versions for the live server, so that a new release of a library
+# cannot change the backend without anyone noticing. These are the versions
+# the tests ran with. To update: change a number, run the tests, commit.
+fastapi==0.162.4
+uvicorn==0.54.0
+httpx==0.28.1
+pypdf==7.0.1

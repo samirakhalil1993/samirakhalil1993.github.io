@@ -47,27 +47,41 @@ def _event(data: dict) -> str:
     return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-def _visitor(request: Request, settings: Settings) -> str:
-    """Who is asking, for the per-visitor limit only.
-
-    Behind a trusted proxy the visitor's address is the LAST entry of
-    X-Forwarded-For: the proxy appends it, while anything in front of it was
-    written by the client and could be invented to dodge the limit.
-    """
-    address = request.client.host if request.client else "unknown"
-    if settings.trust_proxy:
-        forwarded = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
-        if forwarded:
-            address = forwarded
+def _one_visitor(address: str) -> str | None:
+    """The limit key for an address, or None when it is not an address at all."""
     try:
         parsed = ipaddress.ip_address(address)
     except ValueError:
-        return address
+        return None
     if parsed.version == 6:
         # One home connection owns a whole /64 block of IPv6 addresses, so the
         # block counts as one visitor.
         return str(ipaddress.ip_network(f"{address}/64", strict=False).network_address)
-    return address
+    return str(parsed)
+
+
+def _visitor(request: Request, settings: Settings) -> str:
+    """Who is asking, for the per-visitor limit only.
+
+    Three sources, from most to least trusted for a hosted service:
+
+    1. A header the host itself fills in (CLIENT_IP_HEADER). The host replaces
+       whatever the visitor sent under that name, so it cannot be invented.
+    2. Behind a trusted proxy, the LAST entry of X-Forwarded-For: the proxy
+       appends it, while anything in front of it was written by the client.
+    3. The address of the connection itself.
+
+    A value that is not an address is never believed; the next source is used.
+    """
+    connection = request.client.host if request.client else "unknown"
+    if settings.client_ip_header:
+        named = request.headers.get(settings.client_ip_header, "").strip()
+        return _one_visitor(named) or _one_visitor(connection) or connection
+    if settings.trust_proxy:
+        forwarded = request.headers.get("x-forwarded-for", "").split(",")[-1].strip()
+        if forwarded:
+            return _one_visitor(forwarded) or forwarded
+    return _one_visitor(connection) or connection
 
 
 def _parse(raw: bytes, settings: Settings) -> list[Message] | None:
