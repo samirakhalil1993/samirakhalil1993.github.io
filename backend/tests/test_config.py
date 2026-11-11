@@ -85,3 +85,14 @@ def test_the_hosts_visitor_header_is_off_unless_named():
 def test_a_visitor_header_that_is_not_a_header_name_is_rejected(name):
     with pytest.raises(ValueError, match="CLIENT_IP_HEADER"):
         Settings.from_env({"CLIENT_IP_HEADER": name})
+
+
+def test_the_stand_in_models_pause_is_off_unless_set():
+    assert Settings.from_env({}).fake_piece_delay_ms == 0
+    assert Settings.from_env({"FAKE_PIECE_DELAY_MS": "150"}).fake_piece_delay_ms == 150
+
+
+@pytest.mark.parametrize("value", ["-1", "fast", "5001", "1.5"])
+def test_a_bad_pause_names_the_variable(value):
+    with pytest.raises(ValueError, match="FAKE_PIECE_DELAY_MS"):
+        Settings.from_env({"FAKE_PIECE_DELAY_MS": value})

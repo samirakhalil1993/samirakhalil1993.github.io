@@ -28,7 +28,7 @@ INDEX_PATH = Path(__file__).resolve().parents[1] / "data" / "index.json"
 
 def _provider(settings: Settings) -> ChatProvider:
     if settings.provider == "fake":
-        return FakeProvider()
+        return FakeProvider(delay=settings.fake_piece_delay_ms / 1000)
     if not settings.groq_api_key:
         raise RuntimeError(
             "GROQ_API_KEY is missing. Put the key in backend/.env, "

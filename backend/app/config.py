@@ -32,6 +32,9 @@ class Settings:
     groq_reasoning_effort: str | None = "low"
     # "fake" answers with fixed text and needs no key; used for local runs and tests.
     provider: str = "groq"
+    # Only for the "fake" provider: a pause before each piece of its answer, in
+    # milliseconds, so the answer arrives gradually like a real one.
+    fake_piece_delay_ms: int = 0
     # Websites whose pages may call this API from the browser.
     allowed_origins: tuple[str, ...] = ("http://localhost:5173", "http://localhost:4173")
 
@@ -78,8 +81,13 @@ class Settings:
         if header is not None and not re.fullmatch(r"[a-z0-9-]+", header):
             raise ValueError(f"CLIENT_IP_HEADER must be a header name such as cf-connecting-ip, got {header!r}")
 
+        delay = env.get("FAKE_PIECE_DELAY_MS", "").strip() or "0"
+        if not delay.isdigit() or int(delay) > 5000:
+            raise ValueError(f"FAKE_PIECE_DELAY_MS must be a whole number from 0 to 5000, got {delay!r}")
+
         return cls(
             client_ip_header=header,
+            fake_piece_delay_ms=int(delay),
             groq_reasoning_effort=None if effort == "none" else effort,
             requests_per_minute=_number(env, "REQUESTS_PER_MINUTE", cls.requests_per_minute),
             groq_api_key=(env.get("GROQ_API_KEY") or "").strip() or None,
